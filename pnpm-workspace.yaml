@@ -4,10 +4,11 @@ minimumReleaseAgeIgnoreMissingTime: false
 trustLockfile: false
 strictDepBuilds: true
 allowBuilds:
-  '@google/genai': set this to true or false
+  '@google/genai': true
   esbuild: true
   fsevents: true
-  protobufjs: set this to true or false
+  pnpm: false
+  protobufjs: true
   sharp: true
   unrs-resolver: true
   workerd: true
@@ -21,3 +22,19 @@ verifyDepsBeforeRun: false
 optimisticRepeatInstall: false
 overrides:
   miniflare>sharp: 0.35.4
+minimumReleaseAgeExclude:
+  - '@pnpm/exe.android-arm64@12.10.1'
+  - '@pnpm/exe.android-x64@12.10.1'
+  - '@pnpm/exe.darwin-arm64@12.10.1'
+  - '@pnpm/exe.darwin-x64@12.10.1'
+  - '@pnpm/exe.freebsd-x64@12.10.1'
+  - '@pnpm/exe.linux-arm64-musl@12.10.1'
+  - '@pnpm/exe.linux-arm64@12.10.1'
+  - '@pnpm/exe.linux-ppc64@12.10.1'
+  - '@pnpm/exe.linux-riscv64@12.10.1'
+  - '@pnpm/exe.linux-s390x@12.10.1'
+  - '@pnpm/exe.linux-x64-musl@12.10.1'
+  - '@pnpm/exe.linux-x64@12.10.1'
+  - '@pnpm/exe.win32-arm64@12.10.1'
+  - '@pnpm/exe.win32-x64@12.10.1'
+  - pnpm@12.10.1
