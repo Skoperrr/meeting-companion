@@ -16,13 +16,15 @@
     "build:next": "NATIVE_NEXT=1 next build --webpack",
     "start:next": "NATIVE_NEXT=1 next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/integrity.test.ts && python3 tests/persistence.py"
+    "test": "node --experimental-strip-types --test tests/integrity.test.ts tests/productivity.test.ts && node tests/sql-security.mjs && python3 tests/persistence.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@google/genai": "^2.26.0",
     "@hookform/resolvers": "^5.7.1",
     "@shadcn/react": "^0.3.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "^1.1.1",
@@ -49,6 +51,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
     "@cloudflare/workers-types": "4.20260515.1",
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",

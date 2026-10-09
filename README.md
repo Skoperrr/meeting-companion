@@ -1,6 +1,6 @@
 # StrideShift — AI Meeting Companion
 
-A single-workspace, one-day POC with durable task storage, human approval and verbatim evidence. Uses App Router, TypeScript, Tailwind, Lucide and Google GenAI. The private Sites build runs App Router through Vinext with SQLite/D1; native Next.js uses Supabase/PostgreSQL with the same API and UI.
+A Next.js App Router application with Google sign-in, per-user Supabase storage, human approval and verbatim evidence. Uses TypeScript, Tailwind, Lucide and Google GenAI. See [Google OAuth setup and migration](docs-google-auth.md) for configuration and complete file descriptions.
 
 ## File structure
 
@@ -24,18 +24,18 @@ sql/schema.sql                 PostgreSQL schema + atomic approval + RLS
  test-data/meeting.txt
  test-data/expected.json
  tests/                        Integrity and persistence tests
- proxy.ts                      Native Next.js password protection
+ proxy.ts                      Supabase session refresh + protected routes
  next.config.ts
  .env.example
 ```
 
 ## Native Next.js + Supabase setup
 
-1. Create a Supabase project and run `sql/schema.sql` once in its SQL editor.
-2. Copy `.env.example` to `.env.local`. Set `SUPABASE_URL`, server-only `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY` and `APP_PASSWORD`. Never prefix secrets with NEXT_PUBLIC_.
+1. Follow [Google OAuth setup](docs-google-auth.md) and configure the public Supabase URL/publishable key plus the server-only Gemini key.
+2. Run `sql/001_google_auth.sql` once for an existing database, or `sql/schema.sql` for a fresh database. Do not run both.
 3. Install with `pnpm install --frozen-lockfile`.
-4. Run `pnpm dev:next` (localhost:3000). Sign in with any username and APP_PASSWORD. Production: `pnpm build:next` then `pnpm start:next`; use HTTPS.
-5. The Sites build uses `pnpm build`, owner-private access and platform SQLite persistence. Configure GEMINI_API_KEY as a runtime secret and redeploy to enable custom transcript analysis. Supabase configuration is optional on Sites; configure both Supabase variables to use that backend instead.
+4. Develop with `pnpm dev:next`. Production uses `pnpm build:next` and `pnpm start:next`.
+5. Sign in with Google. Existing unowned records require explicit administrative assignment before appearing.
 
 ## Walkthrough
 
@@ -67,12 +67,12 @@ Missing owner: Unassigned. Missing deadline: Not specified. Default priority: Me
 
 ## Scope
 
-This is a private, single-workspace POC, not a multi-tenant service. Sites supplies owner-only authentication. Standalone Next.js requires APP_PASSWORD. Supabase denies direct anonymous/authenticated table access; the server uses the service-role key. Broader deployment requires per-user identity, tenant scoping, RLS policies, rate limits, AI cost quotas and a retention policy. Live transcripts are sent to Google.
+Each Google-authenticated user has an isolated workspace enforced by verified server identity and PostgreSQL RLS. Database calls use the user session and publishable key. Transcript processing sends data to Google. Rate limits, AI usage quotas, pagination and retention controls remain future work.
 
-Unsaved review edits are held in React state; refreshing restores original persisted proposals. Approved reviews cannot be reopened. The snapshot API loads all records; add pagination for larger datasets. Processing is synchronous with a 60-second AI timeout. Live Gemini and Supabase verification requires credentials.
+Unsaved review edits are held in React state; refreshing restores original persisted proposals. Approved reviews cannot be reopened. The snapshot API loads all records; add pagination for larger datasets. Processing is synchronous with a 25-second timeout per AI attempt. Live Gemini and Supabase verification requires credentials.
 
 ## Checks
 
-`pnpm typecheck`, `pnpm test`, `pnpm build`.
+`pnpm typecheck`, `pnpm test`, `pnpm build:next`.
 
-The persistence test exercises atomic approval, duplicate prevention, selective saves, rollback and status persistence against SQLite. The integrity test rejects invented evidence, names and dates. The sample walkthrough verifies the product flow without requiring an AI key.
+The PostgreSQL security test uses PGlite to check ownership isolation, approval rollback/idempotency, evidence protection and source ownership. The productivity tests check combined filters, Markdown task scoping and safe OAuth redirects. The legacy SQLite persistence test exercises atomic approval, duplicate prevention, selective saves, rollback and status persistence against SQLite. The integrity test rejects invented evidence, names and dates. The sample walkthrough verifies the product flow without requiring an AI key.

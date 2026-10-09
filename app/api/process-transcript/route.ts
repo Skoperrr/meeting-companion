@@ -1,3 +1,4 @@
+import { apiAuth } from "@/lib/auth";
 import { ingestionSchema } from "@/lib/schemas";
 import { extract } from "@/lib/ai";
 import { getMeeting, saveMeeting } from "@/lib/db";
@@ -6,6 +7,7 @@ import { ApiError, failure, jsonBody, mutationGuard } from "@/lib/http";
 export async function POST(request: Request) {
   try {
     mutationGuard(request);
+    await apiAuth();
     const data = ingestionSchema.parse(await jsonBody(request));
     const existing = await getMeeting(data.request_id);
     if (existing) {

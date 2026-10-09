@@ -1,29 +1,49 @@
-// Standalone Next.js access boundary. Sites applies owner-only auth upstream.
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { supabaseConfig } from "@/lib/supabase/config";
 export async function proxy(request: NextRequest) {
-  const { env } = await import("@/lib/platform");
-  if (env.DB) return NextResponse.next();
-  const password = process.env.APP_PASSWORD;
-  if (!password)
-    return NextResponse.json(
-      { error: "Set APP_PASSWORD before using the standalone deployment." },
-      { status: 503 },
-    );
-  let supplied = "";
-  try {
-    const header = request.headers.get("authorization");
-    if (header?.startsWith("Basic "))
-      supplied = atob(header.slice(6)).split(":").slice(1).join(":");
-  } catch {}
-  if (supplied !== password)
-    return new NextResponse("Sign in to the meeting workspace.", {
-      status: 401,
-      headers: {
-        "WWW-Authenticate": 'Basic realm="StrideShift", charset="UTF-8"',
+  let response = NextResponse.next({ request });
+  const { url, key } = supabaseConfig();
+  const supabase = createServerClient(url, key, {
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll(values, headers) {
+        values.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request });
+        values.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options),
+        );
+        if (headers)
+          Object.entries(headers).forEach(([name, value]) =>
+            response.headers.set(name, value),
+          );
       },
-    });
-  return NextResponse.next();
+    },
+  });
+  const { data, error } = await supabase.auth.getClaims();
+  if (
+    (error || !data?.claims) &&
+    /^\/(dashboard|tracker|meetings)(\/|$)/.test(request.nextUrl.pathname)
+  ) {
+    const target = request.nextUrl.clone();
+    target.pathname = "/login";
+    target.search = "";
+    target.searchParams.set("next", request.nextUrl.pathname);
+    const redirect = NextResponse.redirect(target);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    redirect.headers.set("Cache-Control", "private, no-store");
+    return redirect;
+  }
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
 }
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/dashboard/:path*",
+    "/tracker/:path*",
+    "/meetings/:path*",
+    "/api/:path*",
+    "/login",
+    "/auth/:path*",
+  ],
 };
