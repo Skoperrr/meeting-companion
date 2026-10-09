@@ -1,9 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { browserSupabase } from "@/lib/supabase/browser";
 export default function UserMenu({ email }: { email: string }) {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -22,8 +20,7 @@ export default function UserMenu({ email }: { email: string }) {
               scope: "local",
             });
             if (error) throw error;
-            router.replace("/login");
-            router.refresh();
+            window.location.replace("/");
           } catch {
             setError("Sign-out failed. Try again.");
             setBusy(false);
