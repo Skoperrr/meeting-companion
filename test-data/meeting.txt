@@ -1,0 +1,9 @@
+StrideShift D-Lab product sync — 9 October 2026
+Maya: We heard that interns lose time copying meeting notes into separate task trackers. The first version should make review simple.
+Thabo: A board is useful, but we should not treat every discussion point as a task.
+Maya: We have decided to keep the current teal brand colour. No change is needed.
+Maya: I will prepare the clickable review prototype by Friday.
+Thabo: I will implement the transcript upload validation.
+Maya: We need to document the approval workflow. Nobody is assigned to that yet.
+Thabo: We should revisit whether calendar integration is useful in our next meeting.
+Maya: Agreed. For this sprint, accurate quotes and human approval matter more than calendar integration.
