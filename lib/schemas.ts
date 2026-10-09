@@ -40,10 +40,14 @@ export const ingestionSchema = z
     transcript: z.string().min(20).max(100000),
     demo: z.boolean().default(false),
     request_id: z.string().uuid(),
+    upsert: z.boolean().default(false),
+    meeting_id: z.string().uuid().optional(),
+    expected_version: z.number().int().positive().optional(),
   })
   .strict();
 export const approvalSchema = z
   .object({
+    version: z.number().int().positive(),
     tasks: z
       .array(
         proposalSchema.extend({
@@ -59,10 +63,24 @@ export type Task = Proposal & {
   id: string;
   meeting_id: string;
   meeting_title: string;
+  meeting_date?: string;
+  meeting_version?: number;
   proposal_index: number;
   status: (typeof statuses)[number];
 };
+export type DuplicateMatch = {
+  id: string;
+  title: string;
+  version: number;
+  matched_by: "transcript" | "title";
+};
+export const duplicateCheckSchema = ingestionSchema.pick({
+  title: true,
+  transcript: true,
+});
 export type Meeting = {
+  version: number;
+  last_request_id?: string | null;
   id: string;
   title: string;
   meeting_date: string;

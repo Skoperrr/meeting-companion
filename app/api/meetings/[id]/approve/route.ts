@@ -11,6 +11,11 @@ export async function POST(
     const data = approvalSchema.parse(await jsonBody(request));
     const meeting = await getMeeting(id);
     if (!meeting) throw new ApiError(404, "Meeting not found.");
+    if (meeting.version !== data.version)
+      throw new ApiError(
+        409,
+        "This meeting was reprocessed. Refresh before approving tasks.",
+      );
     if (meeting.review_state === "approved")
       return Response.json({ ok: true, already_approved: true });
     const indices = new Set<number>();
@@ -27,7 +32,7 @@ export async function POST(
         );
       indices.add(t.proposal_index);
     }
-    await approve(id, data.tasks);
+    await approve(id, data.tasks, data.version);
     return Response.json({ ok: true });
   } catch (e) {
     return failure(e);

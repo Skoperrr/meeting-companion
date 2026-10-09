@@ -8,6 +8,7 @@ const analysis = JSON.parse(
   readFileSync(new URL("../test-data/expected.json", import.meta.url), "utf8"),
 );
 const meeting: Meeting = {
+  version: 1,
   id: "meeting-a",
   title: "Sprint *review*",
   meeting_date: "2026-10-09",

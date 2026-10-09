@@ -2,6 +2,8 @@
 
 A Next.js App Router application with Google sign-in, per-user Supabase storage, human approval and verbatim evidence. Uses TypeScript, Tailwind, Lucide and Google GenAI. See [Google OAuth setup and migration](docs-google-auth.md) for configuration and complete file descriptions.
 
+See [landing, Calendar links and duplicate reprocessing](docs-landing-calendar-duplicates.md) for the latest upgrade and its database migration.
+
 ## File structure
 
 ```text
@@ -32,7 +34,7 @@ sql/schema.sql                 PostgreSQL schema + atomic approval + RLS
 ## Native Next.js + Supabase setup
 
 1. Follow [Google OAuth setup](docs-google-auth.md) and configure the public Supabase URL/publishable key plus the server-only Gemini key.
-2. Run `sql/001_google_auth.sql` once for an existing database, or `sql/schema.sql` for a fresh database. Do not run both.
+2. For an existing database, apply `sql/001_google_auth.sql` if needed, then `sql/002_duplicate_reprocessing.sql`. For a fresh database, run `sql/schema.sql` instead of the migrations.
 3. Install with `pnpm install --frozen-lockfile`.
 4. Develop with `pnpm dev:next`. Production uses `pnpm build:next` and `pnpm start:next`.
 5. Sign in with Google. Existing unowned records require explicit administrative assignment before appearing.
