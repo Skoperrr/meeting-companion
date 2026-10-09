@@ -94,7 +94,13 @@ function ReviewStage({ meeting, onSaved }: Props) {
   ) {
     setRows((previous) =>
       previous.map((task) =>
-        task.proposal_index === index ? { ...task, [key]: value } : task,
+        task.proposal_index === index
+          ? {
+              ...task,
+              [key]: value,
+              ...(key === "assigned_to" ? { assigned_email: null } : {}),
+            }
+          : task,
       ),
     );
   }
@@ -141,6 +147,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
         title: task.title,
         description: task.description,
         assigned_to: task.assigned_to,
+        assigned_email: task.assigned_email ?? null,
         due_date: task.due_date,
         priority: task.priority,
         transcript_quote: task.transcript_quote,
