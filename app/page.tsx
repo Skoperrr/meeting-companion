@@ -75,7 +75,7 @@ export default function Page() {
             <AudioLines size={24} />
           </span>
           <div>
-            stride<span>MEETING COMPANION</span>
+            StrideShift<span>MEETING COMPANION</span>
           </div>
         </div>
         <div className="workspace-label">D-LAB WORKSPACE</div>
