@@ -1058,3 +1058,12 @@ input[type=checkbox] { accent-color: #537d9f; }
   button, .panel, .task-card { transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease; }
 }
 @media(max-width:700px) { .page-heading h1 { font-size: 2.1rem; } }
+
+@keyframes review-arrival { from {opacity:0; transform:translateY(12px);} to {opacity:1;transform:translateY(0);} }
+.review-arrival { animation:review-arrival .35s ease-out both; }
+@media (prefers-reduced-motion:reduce) { .review-arrival { animation:none; } }
+
+.topbar { min-height: 76px; height: auto; padding-top: 12px; padding-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .topbar > div:last-child { width: 100%; justify-content: flex-end; }
+}

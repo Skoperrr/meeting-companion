@@ -13,6 +13,8 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import CommandPalette from "./CommandPalette";
+import SoundToggle from "./SoundToggle";
 import MeetSyncModal from "@/components/MeetSyncModal";
 import TranscriptInput from "@/components/TranscriptInput";
 import TaskReviewList from "@/components/TaskReviewList";
@@ -153,7 +155,30 @@ export default function Workspace({
               }
             </span>
           </div>
-          <span className="poc-label">D-LAB / BLITZ POC</span>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <CommandPalette
+              assignees={[
+                ...new Set(data.tasks.map((task) => task.assigned_to)),
+              ].sort()}
+              onDashboard={() => navigate("overview")}
+              onMeetings={() => navigate("history")}
+              onCreate={() => navigate("new")}
+              onSync={() =>
+                window.dispatchEvent(new Event("meeting-companion:sync"))
+              }
+              onAssignee={(name) => {
+                setView("board");
+                setNavOpen(false);
+                router.push(
+                  name
+                    ? `/tracker?assignee=${encodeURIComponent(name)}`
+                    : "/tracker",
+                );
+              }}
+            />
+            <SoundToggle />
+            <MeetSyncModal onSynced={refresh} />
+          </div>
         </header>
         <main>
           {error && (
@@ -189,7 +214,6 @@ export default function Workspace({
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <MeetSyncModal onSynced={refresh} />
                       <button
                         className="primary"
                         onClick={() => navigate("new")}

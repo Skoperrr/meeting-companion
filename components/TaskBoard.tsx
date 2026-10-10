@@ -1,4 +1,5 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import KanbanBoard from "./KanbanBoard";
 import { statuses, type Task } from "@/lib/schemas";
@@ -12,11 +13,17 @@ export default function TaskBoard({
   onUpdated: () => Promise<void>;
   onMeeting: (id: string) => void;
 }) {
+  const assigneeParam = useSearchParams().get("assignee") ?? "";
+  const [querySource, setQuerySource] = useState(assigneeParam);
   const [filters, setFilters] = useState<TaskFilters>({
-    assignee: "",
+    assignee: assigneeParam,
     priority: "",
     status: "",
   });
+  if (querySource !== assigneeParam) {
+    setQuerySource(assigneeParam);
+    setFilters({ assignee: assigneeParam, priority: "", status: "" });
+  }
   const visible = filterTasks(tasks, filters);
   const assignees = [...new Set(tasks.map((t) => t.assigned_to))].sort((a, b) =>
     a.localeCompare(b),
@@ -108,6 +115,9 @@ export default function TaskBoard({
         tasks={visible}
         onUpdated={onUpdated}
         onMeeting={onMeeting}
+        onAssignee={(name) =>
+          setFilters((current) => ({ ...current, assignee: name }))
+        }
       />
     </>
   );
