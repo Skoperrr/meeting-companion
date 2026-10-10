@@ -512,6 +512,85 @@ assert.equal(
 console.log(
   "PASS: owner-only deletion cascades tasks, revisions and sync transcript copies while preserving unrelated meetings.",
 );
+
+// Vault credentials are never readable or writable through browser roles.
+await db.exec("SET ROLE authenticated");
+await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [a]);
+await assert.rejects(
+  db.query("SELECT * FROM public.user_google_tokens"),
+  /permission denied/,
+);
+const scopes = [
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/meetings.space.readonly",
+];
+const expiry = Math.floor(Date.now() / 1000) + 3600;
+const saveToken = (
+  refresh = "v1.refresh",
+  client = "client",
+  sub = "google-a",
+  grant = scopes,
+) =>
+  db.query("SELECT public.save_user_google_tokens($1,$2,$3,$4,$5,$6,$7)", [
+    a,
+    sub,
+    client,
+    "v1.access",
+    refresh,
+    expiry,
+    grant,
+  ]);
+await assert.rejects(saveToken(), /permission denied/);
+await db.exec("RESET ROLE; SET ROLE service_role");
+await assert.rejects(saveToken(null), /Offline Google refresh token/);
+await assert.rejects(
+  saveToken("v1.refresh", "client", "google-a", []),
+  /Missing Google Workspace/,
+);
+await saveToken();
+await saveToken(null);
+assert.equal(
+  (
+    await db.query(
+      "SELECT refresh_token FROM public.user_google_tokens WHERE user_id=$1",
+      [a],
+    )
+  ).rows[0].refresh_token,
+  "v1.refresh",
+);
+await assert.rejects(
+  saveToken(null, "different-client"),
+  /Offline Google refresh token/,
+);
+await assert.rejects(
+  saveToken("v1.new", "client", "different-user"),
+  /Google identity mismatch/,
+);
+await saveToken("v1.rotated");
+assert.equal(
+  (
+    await db.query(
+      "SELECT refresh_token FROM public.user_google_tokens WHERE user_id=$1",
+      [a],
+    )
+  ).rows[0].refresh_token,
+  "v1.rotated",
+);
+await db.query("SELECT public.disconnect_google_workspace($1)", [a]);
+assert.equal(
+  (
+    await db.query(
+      "SELECT count(*)::int AS n FROM public.user_google_tokens WHERE user_id=$1",
+      [a],
+    )
+  ).rows[0].n,
+  0,
+);
+await db.exec("RESET ROLE");
+console.log(
+  "PASS: token vault blocks browser access, preserves/rotates owned refresh tokens, rejects identity/client mismatch and disconnects atomically.",
+);
 await db.close();
 const legacy = new PGlite();
 await bootstrap(legacy);
@@ -526,6 +605,9 @@ await legacy.exec(
 );
 await legacy.exec(readFileSync(root + "sql/003_google_meet_sync.sql", "utf8"));
 await legacy.exec(readFileSync(root + "sql/004_safe_deletion.sql", "utf8"));
+await legacy.exec(
+  readFileSync(root + "sql/005_unified_google_oauth.sql", "utf8"),
+);
 assert.equal(
   (await legacy.query("SELECT user_id FROM public.meetings")).rows[0].user_id,
   null,

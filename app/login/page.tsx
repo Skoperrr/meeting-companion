@@ -20,7 +20,9 @@ export default async function Login({
         </p>
         {query.error && (
           <p role="alert" className="mb-4 text-sm text-red-700">
-            Google sign-in was not completed. Please try again.
+            {query.error === "workspace"
+              ? "Google Workspace access could not be saved. Grant Calendar, Drive and Meet permissions, then try again. The administrator should verify OAuth client settings and migration 005."
+              : "Google sign-in was not completed. Please try again."}
           </p>
         )}
         <GoogleSignInButton next={safeNext(query.next)} />

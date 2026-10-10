@@ -1,3 +1,7 @@
+# Unified sign-in update
+
+Apply migration 005 and follow [docs-unified-google-oauth.md](docs-unified-google-oauth.md) for the current Google/Supabase consent setup. Google sign-in now grants Workspace permissions in one flow. The separate OAuth connection instructions below describe the earlier integration; `/api/google-workspace/connect` now opens unified sign-in. Sync, email and retry semantics remain the same.
+
 # Google Meet synchronization backend
 
 ## Architecture
