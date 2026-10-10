@@ -1,0 +1,11 @@
+# Command palette, assignee avatars and feedback
+
+Workspace mounts one global cmdk palette with Cmd+K / Ctrl+K and a visible search trigger. Commands navigate to dashboard/history, open transcript creation, open the always-mounted sync modal, or navigate to /tracker with a safely encoded assignee query. The tracker initializes/synchronizes its assignee filter from that query and keeps normal filter controls. Avatar clicks update the same local filter without initiating a task mutation.
+
+AssigneeAvatar hashes normalized names into dark HSL gradient endpoints with white initials. The endpoints exceed 4.5:1 contrast across the hue range; labels and tooltips provide the full owner name. Different names receive deterministic color variation, though a finite color space cannot guarantee no collisions. No external avatar service receives names.
+
+The navbar sound toggle starts muted and remembers the preference in localStorage, including updates from other tabs. Web Audio creates a short sine-wave drop click and a restrained three-note completion chime. A reusable AudioContext is lazily created only after an enabled interaction; oscillator and gain nodes disconnect when finished. Blocked audio/storage support fails quietly without interrupting CRUD. No external audio assets are loaded. Sound signals an optimistic interaction, not server persistence success; existing rollback/error toasts remain authoritative.
+
+TaskReviewList is this repository's review-stage component. TypewriterSummary reveals an already-generated summary over roughly 1.5 seconds while keeping the entire summary available to screen readers and reserving layout height. Proposed task cards use capped staggered CSS entrance delays. This is a presentation animation, not token streaming from Gemini; extraction data, inline editing and verbatim evidence stay unchanged. Reduced-motion users receive the complete summary and no card entrance animation.
+
+cmdk was already installed, so no additional runtime dependency is needed. No SQL migration is required. TypeScript, focused lint and production build checks validate integration. Tests cover deterministic/fallback avatars, gradient endpoint contrast and SSR-safe silent audio. After deployment verify keyboard palette navigation, assignee query/avatars, stored sound settings, modal focus and reduced-motion behavior in a browser.

@@ -53,6 +53,18 @@ export default function MeetSyncModal({ onSynced }: Props) {
     },
     [],
   );
+  useEffect(() => {
+    const openRequested = () => {
+      if (inFlight.current) return;
+      setStage("idle");
+      setError("");
+      setDraftSaved(false);
+      setOpen(true);
+    };
+    window.addEventListener("meeting-companion:sync", openRequested);
+    return () =>
+      window.removeEventListener("meeting-companion:sync", openRequested);
+  }, []);
   function show() {
     setStage("idle");
     setError("");

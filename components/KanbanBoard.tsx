@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import { statuses, type Task } from "@/lib/schemas";
 import { moveKanbanTask, reconcileKanbanTasks } from "@/lib/kanban-state";
+import { playTaskSound } from "@/lib/audio";
 import { celebrateCompletion } from "@/lib/confetti";
 import KanbanCard from "./KanbanCard";
 import TaskCardSkeleton from "./TaskCardSkeleton";
@@ -13,10 +14,12 @@ export default function KanbanBoard({
   tasks,
   onUpdated,
   onMeeting,
+  onAssignee,
 }: {
   tasks: Task[];
   onUpdated: () => Promise<void>;
   onMeeting: (id: string) => void;
+  onAssignee: (name: string) => void;
 }) {
   const router = useRouter();
   const mounted = useSyncExternalStore(
@@ -72,8 +75,10 @@ export default function KanbanBoard({
       ...current,
       items: nextItems ?? current.items.filter((item) => item.id !== task.id),
     }));
-    if (status === "Completed" && task.status !== "Completed")
+    if (status === "Completed" && task.status !== "Completed") {
+      playTaskSound("complete");
       void celebrateCompletion();
+    }
     let saved = false;
     try {
       const response = await fetch(
@@ -132,6 +137,8 @@ export default function KanbanBoard({
       result.source.index === result.destination.index
     )
       return;
+    if (status !== "Completed" || task.status === "Completed")
+      playTaskSound("drop");
     const next = moveKanbanTask(
       items,
       task.id,
@@ -227,6 +234,7 @@ export default function KanbanBoard({
                             }
                             onDelete={() => mutate(task)}
                             onMeeting={onMeeting}
+                            onAssignee={onAssignee}
                           />
                         ))}
                         {provided.placeholder}

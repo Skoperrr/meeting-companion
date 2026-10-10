@@ -3,6 +3,7 @@ import { Draggable } from "@hello-pangea/dnd";
 import { GripVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Task } from "@/lib/schemas";
+import AssigneeAvatar from "./AssigneeAvatar";
 import TaskCard from "./TaskCard";
 import { X, Quote } from "lucide-react";
 function EvidenceDrawer({
@@ -60,6 +61,7 @@ export default function KanbanCard({
   onStatusChange,
   onDelete,
   onMeeting,
+  onAssignee,
 }: {
   task: Task;
   index: number;
@@ -67,18 +69,9 @@ export default function KanbanCard({
   onStatusChange: (status: Task["status"]) => Promise<void>;
   onDelete: () => Promise<void>;
   onMeeting: (id: string) => void;
+  onAssignee: (name: string) => void;
 }) {
   const [evidence, setEvidence] = useState(false);
-  const initials =
-    task.assigned_to === "Unassigned"
-      ? "?"
-      : task.assigned_to
-          .trim()
-          .split(/\s+/)
-          .slice(0, 2)
-          .map((word) => word[0])
-          .join("")
-          .toUpperCase();
   return (
     <Draggable
       draggableId={task.id}
@@ -95,13 +88,11 @@ export default function KanbanCard({
             className={`rounded-xl border bg-white transition-shadow duration-200 ${snapshot.isDragging ? "border-indigo-400 shadow-2xl ring-2 ring-indigo-300/50" : "border-transparent"}`}
           >
             <div className="flex items-center justify-between px-4 pt-3">
-              <span
-                title={task.assigned_to}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700"
-                aria-label={`Assignee: ${task.assigned_to}`}
-              >
-                {initials}
-              </span>
+              <AssigneeAvatar
+                name={task.assigned_to}
+                disabled={disabled}
+                onClick={() => onAssignee(task.assigned_to)}
+              />
               <button
                 type="button"
                 {...provided.dragHandleProps}
