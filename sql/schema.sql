@@ -330,3 +330,11 @@ CREATE FUNCTION public.clear_task_email_on_owner_change() RETURNS trigger LANGUA
 BEGIN IF NEW.assigned_to IS DISTINCT FROM OLD.assigned_to THEN NEW.assigned_email=NULL; END IF; RETURN NEW; END; $$;
 CREATE TRIGGER tasks_email_owner BEFORE UPDATE OF assigned_to ON public.tasks FOR EACH ROW EXECUTE FUNCTION public.clear_task_email_on_owner_change();
 COMMIT;
+
+BEGIN;
+GRANT DELETE ON public.meetings TO authenticated;
+CREATE POLICY meetings_delete_own ON public.meetings FOR DELETE TO authenticated USING (user_id=(SELECT auth.uid()));
+-- Remove the durable transcript/recap copy when its source meeting is deleted.
+ALTER TABLE public.google_meet_sync_jobs DROP CONSTRAINT google_meet_sync_jobs_meeting_id_fkey;
+ALTER TABLE public.google_meet_sync_jobs ADD CONSTRAINT google_meet_sync_jobs_meeting_id_fkey FOREIGN KEY(meeting_id) REFERENCES public.meetings(id) ON DELETE CASCADE;
+COMMIT;

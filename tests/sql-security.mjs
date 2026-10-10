@@ -444,6 +444,74 @@ console.log(
   "PASS: integration privilege isolation, leases, draft checkpointing, frozen email retries, dispatch completion and attendee email approval.",
 );
 
+// Delete permission must remain owner scoped and cascade all persisted source copies.
+await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [b]);
+assert.equal(
+  (
+    await db.query("DELETE FROM public.meetings WHERE id=$1 RETURNING id", [
+      savedMeetingId,
+    ])
+  ).rows.length,
+  0,
+);
+assert.equal(
+  (
+    await db.query(
+      "DELETE FROM public.tasks WHERE meeting_id=$1 RETURNING id",
+      [savedMeetingId],
+    )
+  ).rows.length,
+  0,
+);
+await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [a]);
+assert.equal(
+  (
+    await db.query("DELETE FROM public.meetings WHERE id=$1 RETURNING id", [
+      savedMeetingId,
+    ])
+  ).rows.length,
+  1,
+);
+await db.exec("RESET ROLE");
+assert.equal(
+  (
+    await db.query(
+      "SELECT count(*)::int AS n FROM public.tasks WHERE meeting_id=$1",
+      [savedMeetingId],
+    )
+  ).rows[0].n,
+  0,
+);
+assert.equal(
+  (
+    await db.query(
+      "SELECT count(*)::int AS n FROM public.meeting_revisions WHERE meeting_id=$1",
+      [savedMeetingId],
+    )
+  ).rows[0].n,
+  0,
+);
+assert.equal(
+  (
+    await db.query(
+      "SELECT count(*)::int AS n FROM public.google_meet_sync_jobs WHERE id=$1",
+      [job.id],
+    )
+  ).rows[0].n,
+  0,
+);
+assert.equal(
+  (
+    await db.query(
+      "SELECT count(*)::int AS n FROM public.meetings WHERE id=$1",
+      [id],
+    )
+  ).rows[0].n,
+  1,
+);
+console.log(
+  "PASS: owner-only deletion cascades tasks, revisions and sync transcript copies while preserving unrelated meetings.",
+);
 await db.close();
 const legacy = new PGlite();
 await bootstrap(legacy);
@@ -457,6 +525,7 @@ await legacy.exec(
   readFileSync(root + "sql/002_duplicate_reprocessing.sql", "utf8"),
 );
 await legacy.exec(readFileSync(root + "sql/003_google_meet_sync.sql", "utf8"));
+await legacy.exec(readFileSync(root + "sql/004_safe_deletion.sql", "utf8"));
 assert.equal(
   (await legacy.query("SELECT user_id FROM public.meetings")).rows[0].user_id,
   null,
