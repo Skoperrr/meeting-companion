@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { browserSupabase } from "@/lib/supabase/browser";
+import { WORKSPACE_READ_SCOPES } from "@/lib/google-oauth-policy";
 import { safeNext } from "@/lib/supabase/config";
 export default function GoogleSignInButton({
   next = "/dashboard",
@@ -17,7 +18,11 @@ export default function GoogleSignInButton({
       callback.searchParams.set("next", safeNext(next));
       const { error } = await browserSupabase().auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: callback.toString() },
+        options: {
+          redirectTo: callback.toString(),
+          scopes: WORKSPACE_READ_SCOPES.join(" "),
+          queryParams: { access_type: "offline", prompt: "consent" },
+        },
       });
       if (error) throw error;
     } catch {

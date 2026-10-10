@@ -46,6 +46,24 @@ export async function storeGoogleConnection(
   if (error) throw new ApiError(503, "Could not save the Google connection.");
 }
 export async function loadGoogleRefreshToken(userId: string): Promise<string> {
+  const { data: vault, error: vaultError } = await integrationAdmin()
+    .from("user_google_tokens")
+    .select("refresh_token,google_client_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (vaultError)
+    throw new ApiError(
+      503,
+      "Could not read Google token storage. Apply migration 005.",
+    );
+  if (vault?.refresh_token) {
+    if (vault.google_client_id !== process.env.GOOGLE_CLIENT_ID)
+      throw new ApiError(
+        409,
+        "Google OAuth client changed. Sign in again with Google.",
+      );
+    return decryptGoogleSecret(z.string().parse(vault.refresh_token), userId);
+  }
   const { data, error } = await integrationAdmin()
     .from("google_workspace_connections")
     .select("refresh_token_ciphertext")
@@ -55,7 +73,7 @@ export async function loadGoogleRefreshToken(userId: string): Promise<string> {
   if (!data)
     throw new ApiError(
       409,
-      "Connect Google Workspace at /api/google-workspace/connect first.",
+      "Sign in with Google and grant Workspace access first.",
     );
   return decryptGoogleSecret(
     z.string().parse(data.refresh_token_ciphertext),
