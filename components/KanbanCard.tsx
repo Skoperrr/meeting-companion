@@ -21,7 +21,7 @@ export default function KanbanCard({
   onStatusChange: (status: Task["status"]) => Promise<void>;
   onDelete: () => Promise<void>;
   onMeeting: (id: string) => void;
-  onAssignee: (name: string) => void;
+  onAssignee: (name: string) => void;https://github.com/Skoperrr/meeting-companion/pull/9/conflict?name=app%252Fglobals.css&ancestor_oid=9cae51bd45f029fb0d2b3f60583e258a8e2198b1&base_oid=1190cd5fc0a2aa226db70bbd5bbf1a26ed3687c2&head_oid=8ce0b65c18a8dbc0a5486c9d61f7fd116099f4b0
 }) {
   const [evidence, setEvidence] = useState(false);
   const hovered = useRef(false);
