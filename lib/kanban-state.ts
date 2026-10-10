@@ -45,3 +45,48 @@ export function reconcileKanbanTasks(
   });
   return [...retained, ...byId.values()];
 }
+export type BoardPatch = Partial<
+  Pick<Task, "status" | "assigned_to" | "assigned_email">
+>;
+export function moveGroupedTask(
+  tasks: Task[],
+  id: string,
+  key: "status" | "assigned_to",
+  value: string,
+  index: number,
+): Task[] {
+  const task = tasks.find((t) => t.id === id);
+  if (!task) return tasks;
+  const remaining = tasks.filter((t) => t.id !== id);
+  const column = remaining.filter((t) => t[key] === value);
+  const target = Math.max(0, Math.min(index, column.length));
+  const anchor = column[target];
+  const at = anchor
+    ? remaining.findIndex((t) => t.id === anchor.id)
+    : column.length
+      ? remaining.findIndex((t) => t.id === column[column.length - 1].id) + 1
+      : remaining.length;
+  const moved =
+    key === "status"
+      ? { ...task, status: value as Task["status"] }
+      : { ...task, assigned_to: value, assigned_email: task.assigned_to === value ? task.assigned_email : null };
+  return [...remaining.slice(0, at), moved, ...remaining.slice(at)];
+}
+export function reconcileBoardTasks(
+  current: Task[],
+  incoming: Task[],
+  overrides: Record<string, BoardPatch | null>,
+): Task[] {
+  const byId = new Map(
+    incoming
+      .filter((t) => overrides[t.id] !== null)
+      .map((t) => [t.id, { ...t, ...overrides[t.id] }]),
+  );
+  const retained = current.flatMap((t) => {
+    const fresh = byId.get(t.id);
+    if (!fresh) return [];
+    byId.delete(t.id);
+    return [fresh];
+  });
+  return [...retained, ...byId.values()];
+}

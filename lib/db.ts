@@ -98,7 +98,11 @@ export async function updateTask(
   const { supabase, user } = await apiAuth();
   const { data, error } = await supabase
     .from("tasks")
-    .update(patch)
+    .update(
+      patch.assigned_to !== undefined
+        ? { ...patch, assigned_email: null }
+        : patch,
+    )
     .eq("id", id)
     .eq("user_id", user.id)
     .select("*")

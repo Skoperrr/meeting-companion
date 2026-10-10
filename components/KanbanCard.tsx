@@ -3,56 +3,9 @@ import { Draggable } from "@hello-pangea/dnd";
 import { GripVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Task } from "@/lib/schemas";
+import AssigneeAvatar from "./AssigneeAvatar";
 import TaskCard from "./TaskCard";
-import { X, Quote } from "lucide-react";
-function EvidenceDrawer({
-  task,
-  onClose,
-}: {
-  task: Task;
-  onClose: () => void;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = ref.current;
-    dialog?.showModal();
-    return () => dialog?.close();
-  }, []);
-  return (
-    <dialog
-      ref={ref}
-      aria-label={`Transcript evidence for ${task.title}`}
-      onCancel={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-      className="m-0 ml-auto h-dvh max-h-none w-full max-w-md border-l border-white/10 bg-zinc-950 p-6 text-zinc-100 shadow-2xl backdrop:bg-black/60"
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
-          Source evidence
-        </span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close evidence drawer"
-          className="rounded-lg p-2 hover:bg-white/10"
-        >
-          <X size={20} />
-        </button>
-      </div>
-      <h2 className="mt-8 text-xl font-semibold">{task.title}</h2>
-      <p className="mt-2 text-sm text-zinc-400">{task.meeting_title}</p>
-      <Quote className="mt-8 text-indigo-400" />
-      <blockquote className="mt-4 whitespace-pre-wrap break-words border-l-2 border-indigo-400 pl-4 text-sm leading-7">
-        {task.transcript_quote}
-      </blockquote>
-      <p className="mt-6 text-xs text-zinc-500">
-        Verbatim excerpt from the source meeting.
-      </p>
-    </dialog>
-  );
-}
+import TaskPeekDrawer from "./TaskPeekDrawer";
 export default function KanbanCard({
   task,
   index,
@@ -60,6 +13,7 @@ export default function KanbanCard({
   onStatusChange,
   onDelete,
   onMeeting,
+  onAssignee,
 }: {
   task: Task;
   index: number;
@@ -67,18 +21,36 @@ export default function KanbanCard({
   onStatusChange: (status: Task["status"]) => Promise<void>;
   onDelete: () => Promise<void>;
   onMeeting: (id: string) => void;
+  onAssignee: (name: string) => void;
 }) {
   const [evidence, setEvidence] = useState(false);
-  const initials =
-    task.assigned_to === "Unassigned"
-      ? "?"
-      : task.assigned_to
-          .trim()
-          .split(/\s+/)
-          .slice(0, 2)
-          .map((word) => word[0])
-          .join("")
-          .toUpperCase();
+  const hovered = useRef(false);
+  const card = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const peek = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (
+        event.code !== "Space" ||
+        event.repeat ||
+        event.defaultPrevented ||
+        evidence ||
+        document.querySelector("dialog[open]") ||
+        (!hovered.current && !card.current?.contains(document.activeElement))
+      )
+        return;
+      if (
+        target instanceof Element &&
+        target.closest(
+          'button,input,textarea,select,a,[contenteditable="true"],[role="button"]',
+        )
+      )
+        return;
+      event.preventDefault();
+      setEvidence(true);
+    };
+    window.addEventListener("keydown", peek);
+    return () => window.removeEventListener("keydown", peek);
+  }, [evidence]);
   return (
     <Draggable
       draggableId={task.id}
@@ -87,7 +59,18 @@ export default function KanbanCard({
     >
       {(provided, snapshot) => (
         <div
-          ref={provided.innerRef}
+          ref={(node) => {
+            provided.innerRef(node);
+            card.current = node;
+          }}
+          tabIndex={0}
+          aria-label={`${task.title}. Press Space for quick peek.`}
+          onMouseEnter={() => {
+            hovered.current = true;
+          }}
+          onMouseLeave={() => {
+            hovered.current = false;
+          }}
           {...provided.draggableProps}
           style={provided.draggableProps.style}
         >
@@ -95,13 +78,11 @@ export default function KanbanCard({
             className={`rounded-xl border bg-white transition-shadow duration-200 ${snapshot.isDragging ? "border-indigo-400 shadow-2xl ring-2 ring-indigo-300/50" : "border-transparent"}`}
           >
             <div className="flex items-center justify-between px-4 pt-3">
-              <span
-                title={task.assigned_to}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700"
-                aria-label={`Assignee: ${task.assigned_to}`}
-              >
-                {initials}
-              </span>
+              <AssigneeAvatar
+                name={task.assigned_to}
+                disabled={disabled}
+                onClick={() => onAssignee(task.assigned_to)}
+              />
               <button
                 type="button"
                 {...provided.dragHandleProps}
@@ -130,7 +111,13 @@ export default function KanbanCard({
             </div>
           </div>
           {evidence && (
-            <EvidenceDrawer task={task} onClose={() => setEvidence(false)} />
+            <TaskPeekDrawer
+              task={task}
+              saving={disabled}
+              onStatusChange={onStatusChange}
+              onMeeting={onMeeting}
+              onClose={() => setEvidence(false)}
+            />
           )}
         </div>
       )}

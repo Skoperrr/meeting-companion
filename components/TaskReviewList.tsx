@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import TypewriterSummary from "./TypewriterSummary";
 import { Check, CheckCheck, FileText, Quote, RotateCcw, X } from "lucide-react";
 import {
   approvalSchema,
@@ -210,7 +211,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
       </div>
       <div className="panel analysis">
         <span className="eyebrow">MEETING SUMMARY</span>
-        <p className="summary">{meeting.analysis.summary}</p>
+        <TypewriterSummary text={meeting.analysis.summary} />
         <details className="!mt-0 !border-0 !pt-0">
           <summary className="text-sm font-medium">
             Key points, decisions & follow-ups
@@ -351,10 +352,13 @@ function ReviewStage({ meeting, onSaved }: Props) {
                   return (
                     <article
                       key={index}
+                      style={{
+                        animationDelay: `${Math.min(index, 12) * 70}ms`,
+                      }}
                       onMouseEnter={() => selectEvidence(index)}
                       onClick={() => selectEvidence(index)}
                       onFocusCapture={() => selectEvidence(index)}
-                      className={`min-w-0 rounded-xl border bg-[#fbfaf7] p-4 shadow-sm ${activeIndex === index ? "border-[#537d9f] ring-2 ring-[#537d9f]/20" : "border-[#ded8cd]"}`}
+                      className={`review-arrival min-w-0 rounded-xl border bg-[#fbfaf7] p-4 shadow-sm ${activeIndex === index ? "border-[#537d9f] ring-2 ring-[#537d9f]/20" : "border-[#ded8cd]"}`}
                     >
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <label className="flex !items-center gap-2 !text-sm !font-semibold !text-[#22374e]">
