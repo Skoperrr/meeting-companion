@@ -20,7 +20,8 @@ import TaskBoard from "@/components/TaskBoard";
 import type { Snapshot, Meeting } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import UserMenu from "./UserMenu";
-import ExportMarkdownButton from "./ExportMarkdownButton";
+import MeetingDetails from "./MeetingDetails";
+import MeetingDeleteButton from "./MeetingDeleteButton";
 type View = "overview" | "board" | "history" | "new" | "review" | "meeting";
 export default function Workspace({
   initialView,
@@ -365,29 +366,50 @@ export default function Workspace({
                   </div>
                   <div className="history-grid">
                     {data.meetings.map((m) => (
-                      <button
-                        className="panel history-card"
-                        key={m.id}
-                        onClick={() => openMeeting(m.id)}
-                      >
-                        <div className="inline spread">
-                          <span className="eyebrow">{m.meeting_date}</span>
-                          <span className="badge">
-                            {m.review_state === "pending"
-                              ? "Needs review"
-                              : "Approved"}
-                          </span>
+                      <article className="panel history-card" key={m.id}>
+                        <button
+                          className="w-full text-left"
+                          onClick={() => openMeeting(m.id)}
+                        >
+                          <div className="inline spread">
+                            <span className="eyebrow">{m.meeting_date}</span>
+                            <span className="badge">
+                              {m.review_state === "pending"
+                                ? "Needs review"
+                                : "Approved"}
+                            </span>
+                          </div>
+                          <h2>{m.title}</h2>
+                          <p>{m.analysis.summary}</p>
+                          <small>
+                            {
+                              data.tasks.filter((t) => t.meeting_id === m.id)
+                                .length
+                            }{" "}
+                            saved tasks · {m.analysis.decisions.length}{" "}
+                            decisions
+                          </small>
+                        </button>
+                        <div className="mt-4">
+                          <MeetingDeleteButton
+                            meetingId={m.id}
+                            onDeleted={() => {
+                              setData((current) => ({
+                                ...current,
+                                meetings: current.meetings.filter(
+                                  (item) => item.id !== m.id,
+                                ),
+                                tasks: current.tasks.filter(
+                                  (task) => task.meeting_id !== m.id,
+                                ),
+                              }));
+                              setSelected(null);
+                              setView("overview");
+                              void refresh().catch(() => {});
+                            }}
+                          />
                         </div>
-                        <h2>{m.title}</h2>
-                        <p>{m.analysis.summary}</p>
-                        <small>
-                          {
-                            data.tasks.filter((t) => t.meeting_id === m.id)
-                              .length
-                          }{" "}
-                          saved tasks · {m.analysis.decisions.length} decisions
-                        </small>
-                      </button>
+                      </article>
                     ))}
                   </div>
                   {!data.meetings.length && (
@@ -398,60 +420,26 @@ export default function Workspace({
                 </>
               )}
               {view === "meeting" && selected && (
-                <>
-                  <div className="page-heading">
-                    <div>
-                      <span className="eyebrow">
-                        SOURCE MEETING · {selected.meeting_date}
-                      </span>
-                      <h1>{selected.title}</h1>
-                    </div>
-                    <ExportMarkdownButton
-                      meeting={selected}
-                      tasks={data.tasks}
-                    />
-                  </div>
-                  <div className="panel analysis">
-                    <span className="eyebrow">SUMMARY</span>
-                    <p className="summary">{selected.analysis.summary}</p>
-                    <div className="analysis-grid">
-                      {(
-                        [
-                          ["Key points", selected.analysis.key_points],
-                          ["Decisions", selected.analysis.decisions],
-                          ["Follow-ups", selected.analysis.follow_ups],
-                        ] as [string, string[]][]
-                      ).map(([k, v]) => (
-                        <div key={k}>
-                          <h3>{k}</h3>
-                          <ul>
-                            {v.map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                          </ul>
-                          {!v.length && (
-                            <p className="muted">None identified.</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <details>
-                      <summary>Read original transcript</summary>
-                      <pre className="transcript-source">
-                        {selected.transcript}
-                      </pre>
-                    </details>
-                  </div>
-                  <div className="linked-tasks">
-                    <TaskBoard
-                      tasks={data.tasks.filter(
-                        (t) => t.meeting_id === selected.id,
-                      )}
-                      onUpdated={refresh}
-                      onMeeting={openMeeting}
-                    />
-                  </div>
-                </>
+                <MeetingDetails
+                  meeting={selected}
+                  tasks={data.tasks}
+                  onUpdated={refresh}
+                  onMeeting={openMeeting}
+                  onDeleted={() => {
+                    setData((current) => ({
+                      ...current,
+                      meetings: current.meetings.filter(
+                        (m) => m.id !== selected.id,
+                      ),
+                      tasks: current.tasks.filter(
+                        (t) => t.meeting_id !== selected.id,
+                      ),
+                    }));
+                    setSelected(null);
+                    setView("overview");
+                    void refresh().catch(() => {});
+                  }}
+                />
               )}
             </>
           )}

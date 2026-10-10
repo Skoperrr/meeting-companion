@@ -171,3 +171,15 @@ export async function saveProcessedMeeting(input: {
   if (!data) throw new Error("Meeting was not saved.");
   return meeting(data);
 }
+
+export async function deleteMeeting(id: string) {
+  const { supabase, user } = await apiAuth();
+  const { data, error } = await supabase
+    .from("meetings")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("id");
+  check(error);
+  if (!data?.length) throw new ApiError(404, "Meeting not found.");
+}

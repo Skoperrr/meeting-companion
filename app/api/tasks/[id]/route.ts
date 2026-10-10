@@ -30,7 +30,12 @@ export async function DELETE(
 ) {
   try {
     mutationGuard(request);
-    await deleteTask((await params).id);
+    await deleteTask(
+      z
+        .string()
+        .uuid()
+        .parse((await params).id),
+    );
     return new Response(null, { status: 204 });
   } catch (e) {
     return failure(e);
