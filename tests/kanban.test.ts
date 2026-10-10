@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { moveKanbanTask, reconcileKanbanTasks } from "../lib/kanban-state.ts";
+import {
+  moveKanbanTask,
+  reconcileKanbanTasks,
+  moveGroupedTask,
+  reconcileBoardTasks,
+} from "../lib/kanban-state.ts";
 import type { Task } from "../lib/schemas.ts";
 const card = (id: string, status: Task["status"]): Task => ({
   id,
@@ -58,4 +63,25 @@ test("stale snapshots cannot undo unacknowledged status moves or deletions", () 
     reconcileKanbanTasks(next, tasks).find((t) => t.id === "a")?.status,
     "To Do",
   );
+});
+
+test("assignee swimlane drops persist one owner change without changing status or retaining an old email", () => {
+  const original = [
+    { ...tasks[0], assigned_to: "Elena", assigned_email: "elena@example.com" },
+    { ...tasks[1], assigned_to: "Marcus" },
+  ];
+  const next = moveGroupedTask(original, "a", "assigned_to", "Marcus", 0);
+  assert.deepEqual(
+    next.map((t) => t.id),
+    ["a", "b"],
+  );
+  assert.equal(next[0].assigned_to, "Marcus");
+  assert.equal(next[0].status, "To Do");
+  assert.equal(next[0].assigned_email, null);
+  assert.equal(original[0].assigned_to, "Elena");
+  const reconciled = reconcileBoardTasks(next, original, {
+    a: { assigned_to: "Marcus", assigned_email: null },
+  });
+  assert.equal(reconciled[0].assigned_to, "Marcus");
+  assert.equal(reconciled[0].assigned_email, null);
 });

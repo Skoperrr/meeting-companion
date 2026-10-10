@@ -1,6 +1,6 @@
 "use client";
 import type { Meeting, Task } from "@/lib/schemas";
-import ExportMarkdownButton from "./ExportMarkdownButton";
+import MeetingExportMenu from "./MeetingExportMenu";
 import MeetingDeleteButton from "./MeetingDeleteButton";
 import TaskBoard from "./TaskBoard";
 export default function MeetingDetails({
@@ -26,7 +26,7 @@ export default function MeetingDetails({
           <h1>{meeting.title}</h1>
         </div>
         <div className="flex flex-wrap gap-3">
-          <ExportMarkdownButton meeting={meeting} tasks={tasks} />
+          <MeetingExportMenu meeting={meeting} tasks={tasks} />
           <MeetingDeleteButton meetingId={meeting.id} onDeleted={onDeleted} />
         </div>
       </div>

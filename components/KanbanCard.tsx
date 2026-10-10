@@ -5,55 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Task } from "@/lib/schemas";
 import AssigneeAvatar from "./AssigneeAvatar";
 import TaskCard from "./TaskCard";
-import { X, Quote } from "lucide-react";
-function EvidenceDrawer({
-  task,
-  onClose,
-}: {
-  task: Task;
-  onClose: () => void;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = ref.current;
-    dialog?.showModal();
-    return () => dialog?.close();
-  }, []);
-  return (
-    <dialog
-      ref={ref}
-      aria-label={`Transcript evidence for ${task.title}`}
-      onCancel={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-      className="m-0 ml-auto h-dvh max-h-none w-full max-w-md border-l border-white/10 bg-zinc-950 p-6 text-zinc-100 shadow-2xl backdrop:bg-black/60"
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
-          Source evidence
-        </span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close evidence drawer"
-          className="rounded-lg p-2 hover:bg-white/10"
-        >
-          <X size={20} />
-        </button>
-      </div>
-      <h2 className="mt-8 text-xl font-semibold">{task.title}</h2>
-      <p className="mt-2 text-sm text-zinc-400">{task.meeting_title}</p>
-      <Quote className="mt-8 text-indigo-400" />
-      <blockquote className="mt-4 whitespace-pre-wrap break-words border-l-2 border-indigo-400 pl-4 text-sm leading-7">
-        {task.transcript_quote}
-      </blockquote>
-      <p className="mt-6 text-xs text-zinc-500">
-        Verbatim excerpt from the source meeting.
-      </p>
-    </dialog>
-  );
-}
+import TaskPeekDrawer from "./TaskPeekDrawer";
 export default function KanbanCard({
   task,
   index,
@@ -72,6 +24,33 @@ export default function KanbanCard({
   onAssignee: (name: string) => void;
 }) {
   const [evidence, setEvidence] = useState(false);
+  const hovered = useRef(false);
+  const card = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const peek = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (
+        event.code !== "Space" ||
+        event.repeat ||
+        event.defaultPrevented ||
+        evidence ||
+        document.querySelector("dialog[open]") ||
+        (!hovered.current && !card.current?.contains(document.activeElement))
+      )
+        return;
+      if (
+        target instanceof Element &&
+        target.closest(
+          'button,input,textarea,select,a,[contenteditable="true"],[role="button"]',
+        )
+      )
+        return;
+      event.preventDefault();
+      setEvidence(true);
+    };
+    window.addEventListener("keydown", peek);
+    return () => window.removeEventListener("keydown", peek);
+  }, [evidence]);
   return (
     <Draggable
       draggableId={task.id}
@@ -80,7 +59,18 @@ export default function KanbanCard({
     >
       {(provided, snapshot) => (
         <div
-          ref={provided.innerRef}
+          ref={(node) => {
+            provided.innerRef(node);
+            card.current = node;
+          }}
+          tabIndex={0}
+          aria-label={`${task.title}. Press Space for quick peek.`}
+          onMouseEnter={() => {
+            hovered.current = true;
+          }}
+          onMouseLeave={() => {
+            hovered.current = false;
+          }}
           {...provided.draggableProps}
           style={provided.draggableProps.style}
         >
@@ -121,7 +111,13 @@ export default function KanbanCard({
             </div>
           </div>
           {evidence && (
-            <EvidenceDrawer task={task} onClose={() => setEvidence(false)} />
+            <TaskPeekDrawer
+              task={task}
+              saving={disabled}
+              onStatusChange={onStatusChange}
+              onMeeting={onMeeting}
+              onClose={() => setEvidence(false)}
+            />
           )}
         </div>
       )}

@@ -1067,3 +1067,7 @@ input[type=checkbox] { accent-color: #537d9f; }
 @media (max-width: 640px) {
   .topbar > div:last-child { width: 100%; justify-content: flex-end; }
 }
+
+@keyframes peek-enter { from { transform: translateX(100%); opacity: .4; } to { transform: translateX(0); opacity: 1; } }
+.peek-drawer[open] { animation: peek-enter 200ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .peek-drawer[open] { animation: none; } }

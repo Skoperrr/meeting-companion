@@ -4,7 +4,12 @@ import { DragDropContext, Droppable, type DropResult } from "@hello-pangea/dnd";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import { statuses, type Task } from "@/lib/schemas";
-import { moveKanbanTask, reconcileKanbanTasks } from "@/lib/kanban-state";
+import {
+  moveKanbanTask,
+  moveGroupedTask,
+  reconcileBoardTasks,
+  type BoardPatch,
+} from "@/lib/kanban-state";
 import { playTaskSound } from "@/lib/audio";
 import { celebrateCompletion } from "@/lib/confetti";
 import KanbanCard from "./KanbanCard";
@@ -31,24 +36,43 @@ export default function KanbanBoard({
   const [pending, setPending] = useState(false);
   const lock = useRef(false);
   const [optimistic, setOptimistic] = useState<
-    Record<string, Task["status"] | null>
+    Record<string, BoardPatch | null>
   >({});
   if (snapshot.source !== tasks && !pending) {
     setSnapshot({
       source: tasks,
-      items: reconcileKanbanTasks(snapshot.items, tasks, optimistic),
+      items: reconcileBoardTasks(snapshot.items, tasks, optimistic),
     });
     setOptimistic((current) =>
       Object.fromEntries(
         Object.entries(current).filter(([id, status]) =>
           status === null
             ? tasks.some((task) => task.id === id)
-            : !tasks.some((task) => task.id === id && task.status === status),
+            : !tasks.some(
+                (task) =>
+                  task.id === id &&
+                  Object.entries(status).every(
+                    ([key, value]) => task[key as keyof Task] === value,
+                  ),
+              ),
         ),
       ),
     );
   }
+  const [grouping, setGrouping] = useState<"status" | "assigned_to">("status");
   const items = snapshot.items;
+  const columns: string[] =
+    grouping === "status"
+      ? [...statuses]
+      : [
+          ...new Set([
+            ...items.map((t) => t.assigned_to),
+            ...tasks.map((t) => t.assigned_to),
+            "Unassigned",
+          ]),
+        ].sort((a, b) =>
+          a === "Unassigned" ? 1 : b === "Unassigned" ? -1 : a.localeCompare(b),
+        );
   const completed = items.filter((task) => task.status === "Completed").length;
   const percent = items.length
     ? Math.round((completed / items.length) * 100)
@@ -61,21 +85,17 @@ export default function KanbanBoard({
       toast.warning("Changes saved. Reload to refresh dashboard metrics.");
     }
   }
-  async function mutate(
-    task: Task,
-    status?: Task["status"],
-    nextItems?: Task[],
-  ) {
+  async function mutate(task: Task, patch?: BoardPatch, nextItems?: Task[]) {
     if (lock.current) return;
     lock.current = true;
     setPending(true);
     const before = snapshot.items;
-    setOptimistic((current) => ({ ...current, [task.id]: status ?? null }));
+    setOptimistic((current) => ({ ...current, [task.id]: patch ?? null }));
     setSnapshot((current) => ({
       ...current,
       items: nextItems ?? current.items.filter((item) => item.id !== task.id),
     }));
-    if (status === "Completed" && task.status !== "Completed") {
+    if (patch?.status === "Completed" && task.status !== "Completed") {
       playTaskSound("complete");
       void celebrateCompletion();
     }
@@ -84,11 +104,18 @@ export default function KanbanBoard({
       const response = await fetch(
         `/api/tasks/${encodeURIComponent(task.id)}`,
         {
-          method: status ? "PATCH" : "DELETE",
-          ...(status
+          method: patch ? "PATCH" : "DELETE",
+          ...(patch
             ? {
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status }),
+                body: JSON.stringify({
+                  ...(patch.status !== undefined
+                    ? { status: patch.status }
+                    : {}),
+                  ...(patch.assigned_to !== undefined
+                    ? { assigned_to: patch.assigned_to }
+                    : {}),
+                }),
               }
             : {}),
         },
@@ -128,32 +155,63 @@ export default function KanbanBoard({
       return;
     const task = items.find((task) => task.id === result.draggableId);
     if (!task) return;
-    const status = statuses.find(
-      (status) => status === result.destination?.droppableId,
-    );
-    if (!status) return;
+    const value = result.destination.droppableId;
+    if (!columns.includes(value)) return;
     if (
-      result.source.droppableId === status &&
+      result.source.droppableId === value &&
       result.source.index === result.destination.index
     )
       return;
-    if (status !== "Completed" || task.status === "Completed")
+    if (
+      grouping !== "status" ||
+      value !== "Completed" ||
+      task.status === "Completed"
+    )
       playTaskSound("drop");
-    const next = moveKanbanTask(
+    const next = moveGroupedTask(
       items,
       task.id,
-      status,
+      grouping,
+      value,
       result.destination.index,
     );
-    if (task.status === status) {
+    if (task[grouping] === value) {
       setSnapshot((current) => ({ ...current, items: next }));
       return;
     }
-    void mutate(task, status, next);
+    const patch: BoardPatch =
+      grouping === "status"
+        ? { status: value as Task["status"] }
+        : { assigned_to: value, assigned_email: null };
+    void mutate(task, patch, next);
   }
+
   return (
     <>
       <Toaster position="bottom-right" richColors />
+      <div
+        role="group"
+        aria-label="Board grouping"
+        className="mb-4 inline-flex rounded-xl border border-zinc-700 bg-zinc-950 p-1 text-sm"
+      >
+        {(
+          [
+            ["status", "Group by Status"],
+            ["assigned_to", "Group by Assignee"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={grouping === key}
+            disabled={pending}
+            onClick={() => setGrouping(key)}
+            className={`rounded-lg px-4 py-2 transition-colors disabled:opacity-50 ${grouping === key ? "bg-zinc-700 text-white shadow-sm" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <section
         aria-label="Meeting task completion"
         className="mb-5 rounded-xl border border-slate-200 bg-white p-4"
@@ -196,9 +254,14 @@ export default function KanbanBoard({
         </div>
       ) : (
         <DragDropContext onDragEnd={drop}>
-          <div className="board">
-            {statuses.map((status, index) => {
-              const column = items.filter((task) => task.status === status);
+          <div
+            className="board"
+            style={{
+              gridTemplateColumns: `repeat(${columns.length}, minmax(260px, 1fr))`,
+            }}
+          >
+            {columns.map((status, index) => {
+              const column = items.filter((task) => task[grouping] === status);
               return (
                 <section key={status} className="board-column">
                   <div className="column-heading">
@@ -222,7 +285,7 @@ export default function KanbanBoard({
                             onStatusChange={(status) =>
                               mutate(
                                 task,
-                                status,
+                                { status },
                                 moveKanbanTask(
                                   items,
                                   task.id,
