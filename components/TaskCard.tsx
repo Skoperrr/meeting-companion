@@ -55,10 +55,12 @@ export default function TaskCard({
     }
   }
   return (
-    <article className="task-card">
+    <article className="task-card border transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none">
       <div className="card-top">
         <TaskCalendarButton task={task} referenceDate={task.meeting_date} />
-        <span className={`badge priority-${task.priority.toLowerCase()}`}>
+        <span
+          className={`badge priority-${task.priority.toLowerCase()} ${task.priority === "High" ? "shadow-[0_0_10px_rgba(239,68,68,0.12)]" : task.priority === "Med" ? "shadow-[0_0_10px_rgba(245,158,11,0.12)]" : "shadow-[0_0_10px_rgba(16,185,129,0.12)]"}`}
+        >
           {task.priority === "Med" ? "Medium" : task.priority} priority
         </span>
         <button
