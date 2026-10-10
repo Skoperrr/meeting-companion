@@ -3,7 +3,7 @@ import { proposalSchema, statuses } from "@/lib/schemas";
 import { updateTask, deleteTask } from "@/lib/db";
 import { failure, jsonBody, mutationGuard } from "@/lib/http";
 const patchSchema = proposalSchema
-  .omit({ transcript_quote: true })
+  .omit({ transcript_quote: true, assigned_email: true })
   .partial()
   .extend({ status: z.enum(statuses).optional() })
   .strict()

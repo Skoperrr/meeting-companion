@@ -13,6 +13,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import MeetSyncModal from "@/components/MeetSyncModal";
 import TranscriptInput from "@/components/TranscriptInput";
 import TaskReviewList from "@/components/TaskReviewList";
 import TaskBoard from "@/components/TaskBoard";
@@ -186,9 +187,15 @@ export default function Workspace({
                         work moving.
                       </p>
                     </div>
-                    <button className="primary" onClick={() => navigate("new")}>
-                      <Plus size={18} /> New meeting
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <MeetSyncModal onSynced={refresh} />
+                      <button
+                        className="primary"
+                        onClick={() => navigate("new")}
+                      >
+                        <Plus size={18} /> New meeting
+                      </button>
+                    </div>
                   </div>
                   <div className="metrics">
                     {[

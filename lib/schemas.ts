@@ -13,6 +13,7 @@ export const proposalSchema = z
     title: field.max(250),
     description: field,
     assigned_to: field.max(150),
+    assigned_email: z.string().email().nullable().optional(),
     due_date: field.max(150),
     priority: z.enum(priorities),
     transcript_quote: z.string().min(1).max(4000),
