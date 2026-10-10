@@ -276,6 +276,174 @@ await assert.rejects(
 console.log(
   "PASS: owner isolation, duplicate detection, request retries, revision checks, atomic rollback, status-preserving reconciliation and evidence archival.",
 );
+
+// Workspace integration RPCs remain server-only and checkpoint retries atomically.
+await db.exec("SET ROLE authenticated");
+await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [a]);
+await assert.rejects(
+  db.query("SELECT * FROM public.google_workspace_connections"),
+  /permission denied/,
+);
+await assert.rejects(
+  db.query("SELECT public.claim_meet_sync($1,$2,$3)", [
+    a,
+    "a".repeat(64),
+    "{}",
+  ]),
+  /permission denied/,
+);
+await assert.rejects(
+  db.query("SELECT public.approve_meeting_core($1,$2,1)", [id, "[]"]),
+  /permission denied/,
+);
+await db.exec("RESET ROLE; SET ROLE service_role");
+const source = {
+  calendarId: "primary",
+  eventId: "event",
+  title: "Google sync · 2026-10-09",
+  meetingDate: "2026-10-09",
+  meetUrl: "https://meet.google.com/abc-defg-hij",
+  documentId: "document",
+  documentUrl: "https://drive.google.com/file/d/document/view",
+  transcript: transcript + " Additional general discussion.",
+  attendees: [
+    { name: "Maya", email: "maya@example.com" },
+    { name: "Thabo", email: "thabo@example.com" },
+  ],
+};
+const fingerprint = "a".repeat(64);
+const claim = async () =>
+  (
+    await db.query("SELECT public.claim_meet_sync($1,$2,$3) AS job", [
+      a,
+      fingerprint,
+      JSON.stringify(source),
+    ])
+  ).rows[0].job;
+let job = await claim();
+await assert.rejects(claim(), /busy/);
+const workspaceAnalysis = {
+  ...fixture,
+  proposed_tasks: fixture.proposed_tasks.map((t) => ({
+    ...t,
+    assigned_email:
+      t.assigned_to === "Maya"
+        ? "maya@example.com"
+        : t.assigned_to === "Thabo"
+          ? "thabo@example.com"
+          : null,
+  })),
+};
+const saveJob = async () =>
+  (
+    await db.query("SELECT public.save_meet_sync_result($1,$2,$3,$4) AS job", [
+      a,
+      job.id,
+      job.lease_token,
+      JSON.stringify(workspaceAnalysis),
+    ])
+  ).rows[0].job;
+await assert.rejects(
+  db.query("SELECT public.save_meet_sync_result($1,$2,$3,$4)", [
+    b,
+    job.id,
+    job.lease_token,
+    JSON.stringify(workspaceAnalysis),
+  ]),
+  /lease expired/,
+);
+job = await saveJob();
+const savedMeetingId = job.meeting_id;
+assert.equal((await saveJob()).meeting_id, savedMeetingId);
+const payload = {
+  from: "recap@example.com",
+  subject: "Recap",
+  html: "<p>Draft</p>",
+  text: "Draft",
+};
+const stage = async (p) =>
+  (
+    await db.query("SELECT public.stage_meet_email($1,$2,$3,$4) AS job", [
+      a,
+      job.id,
+      job.lease_token,
+      JSON.stringify(p),
+    ])
+  ).rows[0].job;
+job = await stage(payload);
+await db.query(
+  "UPDATE public.google_meet_sync_jobs SET status='failed',lease_until=NULL,lease_token=NULL WHERE id=$1",
+  [job.id],
+);
+job = await claim();
+assert.equal(job.meeting_id, savedMeetingId);
+job = await stage({ ...payload, subject: "Changed" });
+assert.equal(job.email_payload.subject, "Recap");
+await assert.rejects(
+  db.query("SELECT public.finish_meet_sync($1,$2,$3,$4)", [
+    a,
+    job.id,
+    job.lease_token,
+    '["email-1"]',
+  ]),
+  /Incomplete email batch/,
+);
+await db.query("SELECT public.finish_meet_sync($1,$2,$3,$4)", [
+  a,
+  job.id,
+  job.lease_token,
+  '["email-1","email-2"]',
+]);
+assert.equal((await claim()).status, "sent");
+await db.exec("RESET ROLE; SET ROLE authenticated");
+await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [a]);
+assert.equal(
+  (
+    await db.query("SELECT review_state FROM public.meetings WHERE id=$1", [
+      savedMeetingId,
+    ])
+  ).rows[0].review_state,
+  "pending",
+);
+const workspaceProposals = workspaceAnalysis.proposed_tasks.map((t, i) => ({
+  ...t,
+  proposal_index: i,
+}));
+await assert.rejects(
+  approve(
+    savedMeetingId,
+    [{ ...workspaceProposals[0], assigned_email: "impostor@example.com" }],
+    1,
+  ),
+  /Invalid attendee email mapping/,
+);
+await approve(savedMeetingId, workspaceProposals, 1);
+assert.equal(
+  (
+    await db.query(
+      "SELECT assigned_email FROM public.tasks WHERE meeting_id=$1 AND proposal_index=0",
+      [savedMeetingId],
+    )
+  ).rows[0].assigned_email,
+  workspaceProposals[0].assigned_email,
+);
+await db.query(
+  "UPDATE public.tasks SET assigned_to='Unassigned' WHERE meeting_id=$1 AND proposal_index=0",
+  [savedMeetingId],
+);
+assert.equal(
+  (
+    await db.query(
+      "SELECT assigned_email FROM public.tasks WHERE meeting_id=$1 AND proposal_index=0",
+      [savedMeetingId],
+    )
+  ).rows[0].assigned_email,
+  null,
+);
+console.log(
+  "PASS: integration privilege isolation, leases, draft checkpointing, frozen email retries, dispatch completion and attendee email approval.",
+);
+
 await db.close();
 const legacy = new PGlite();
 await bootstrap(legacy);
@@ -288,6 +456,7 @@ await legacy.exec(readFileSync(root + "sql/001_google_auth.sql", "utf8"));
 await legacy.exec(
   readFileSync(root + "sql/002_duplicate_reprocessing.sql", "utf8"),
 );
+await legacy.exec(readFileSync(root + "sql/003_google_meet_sync.sql", "utf8"));
 assert.equal(
   (await legacy.query("SELECT user_id FROM public.meetings")).rows[0].user_id,
   null,

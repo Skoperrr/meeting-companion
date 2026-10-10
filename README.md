@@ -78,3 +78,7 @@ Unsaved review edits are held in React state; refreshing restores original persi
 `pnpm typecheck`, `pnpm test`, `pnpm build:next`.
 
 The PostgreSQL security test uses PGlite to check ownership isolation, approval rollback/idempotency, evidence protection and source ownership. The productivity tests check combined filters, Markdown task scoping and safe OAuth redirects. The legacy SQLite persistence test exercises atomic approval, duplicate prevention, selective saves, rollback and status persistence against SQLite. The integrity test rejects invented evidence, names and dates. The sample walkthrough verifies the product flow without requiring an AI key.
+
+## Google Meet synchronization
+
+The optional Workspace integration imports an existing Google Meet transcript, extracts speaker-aware proposals and emails an evidence-backed recap to the Calendar invitees. See [docs-google-meet-sync.md](docs-google-meet-sync.md) for OAuth configuration, encrypted per-user tokens, migration 003, the sync endpoint and retry semantics. Proposals still require human approval before becoming tracker tasks.
