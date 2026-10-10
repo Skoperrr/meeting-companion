@@ -23,7 +23,12 @@ const actionClass =
 
 // Keying the inner stage prevents edits leaking into a different meeting.
 export default function TaskReviewList(props: Props) {
-  return <ReviewStage key={props.meeting.id} {...props} />;
+  return (
+    <ReviewStage
+      key={`${props.meeting.id}:${props.meeting.version}`}
+      {...props}
+    />
+  );
 }
 
 function ReviewStage({ meeting, onSaved }: Props) {
@@ -130,7 +135,16 @@ function ReviewStage({ meeting, onSaved }: Props) {
     event.preventDefault();
     if (savingRef.current) return;
     const payload = approvalSchema.safeParse({
-      tasks: approved.map(({ approved: _approved, ...task }) => task),
+      version: meeting.version,
+      tasks: approved.map((task) => ({
+        proposal_index: task.proposal_index,
+        title: task.title,
+        description: task.description,
+        assigned_to: task.assigned_to,
+        due_date: task.due_date,
+        priority: task.priority,
+        transcript_quote: task.transcript_quote,
+      })),
     });
     if (!payload.success) {
       setError(

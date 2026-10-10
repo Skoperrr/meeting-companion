@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Quote, CalendarDays, UserRound, Link2 } from "lucide-react";
 import { statuses, type Task } from "@/lib/schemas";
 import { filterTasks, type TaskFilters } from "@/lib/productivity";
+import TaskCalendarButton from "./TaskCalendarButton";
 import QuoteModal from "./QuoteModal";
 export default function TaskBoard({
   tasks,
@@ -127,6 +128,10 @@ export default function TaskBoard({
                 {items.map((t) => (
                   <article className="task-card" key={t.id}>
                     <div className="card-top">
+                      <TaskCalendarButton
+                        task={t}
+                        referenceDate={t.meeting_date}
+                      />
                       <span
                         className={`badge priority-${t.priority.toLowerCase()}`}
                       >
