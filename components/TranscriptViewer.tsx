@@ -52,7 +52,7 @@ export default function TranscriptViewer({
             <mark
               ref={target}
               key={quote}
-              className="quote-jump rounded bg-[#e2eadf] px-1 text-botanical-forest"
+              className="quote-jump rounded bg-[#16181D] px-1 text-botanical-forest"
             >
               {quote}
             </mark>

@@ -1,4 +1,5 @@
 "use client";
+import { springPhysics } from "@/lib/motion";
 import { motion, useReducedMotion } from "framer-motion";
 import { memo, useEffect, useRef, useState } from "react";
 import { AlertCircle, Link2, Quote, Trash2, UserRound } from "lucide-react";
@@ -8,6 +9,7 @@ import SmartDateBadge from "./SmartDateBadge";
 import TaskCalendarButton from "./TaskCalendarButton";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 type Props = {
+  presentationCopy?: boolean;
   isDragging?: boolean;
   task: Task;
   saving: boolean;
@@ -18,6 +20,7 @@ type Props = {
   onEvidence: () => void;
 };
 function TaskCard({
+  presentationCopy = false,
   isDragging = false,
   task,
   saving,
@@ -57,8 +60,9 @@ function TaskCard({
   return (
     <motion.article
       data-task-id={task.id}
+      layoutId={presentationCopy ? undefined : `task-${task.id}`}
       layout={!reduced && !isDragging}
-      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+      transition={springPhysics}
       exit={{ opacity: 0, scale: 0.95 }}
       className="task-card border transition-all duration-300 hover:-translate-y-0.5 hover:border-botanical-sage hover:shadow-paper motion-reduce:transform-none motion-reduce:transition-none"
     >

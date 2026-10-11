@@ -1,4 +1,5 @@
 "use client";
+import { springPhysics } from "@/lib/motion";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useOptimisticMutation } from "@/hooks/useOptimisticMutation";
 import VirtualTaskList from "./VirtualTaskList";
@@ -86,7 +87,7 @@ export default function KanbanBoard({
   const items = snapshot.items;
   const columns: string[] =
     grouping === "status"
-      ? [...statuses]
+      ? statuses.filter((status) => status !== "In Review")
       : [
           ...new Set([
             ...items.map((t) => t.assigned_to),
@@ -245,6 +246,7 @@ export default function KanbanBoard({
             }}
           >
             <TaskCard
+              presentationCopy
               task={ghost.task}
               saving={true}
               onStatusChange={async () => {}}
@@ -358,12 +360,14 @@ export default function KanbanBoard({
           <span className="sr-only" role="status">
             Loading interactive board...
           </span>
-          {statuses.map((status) => (
-            <section className="board-column" key={status}>
-              <h3 className="mb-4 text-sm font-semibold">{status}</h3>
-              <TaskCardSkeleton />
-            </section>
-          ))}
+          {statuses
+            .filter((status) => status !== "In Review")
+            .map((status) => (
+              <section className="board-column" key={status}>
+                <h3 className="mb-4 text-sm font-semibold">{status}</h3>
+                <TaskCardSkeleton />
+              </section>
+            ))}
         </div>
       ) : (
         <DragDropContext onDragStart={() => setDragging(true)} onDragEnd={drop}>
@@ -376,7 +380,7 @@ export default function KanbanBoard({
             <AnimatePresence initial={false}>
               {columns.map((status, index) => {
                 const column = items.filter(
-                  (task) => task[grouping] === status,
+                  (task) => task[grouping] === status || (grouping === "status" && status === "In Progress" && task.status === "In Review"),
                 );
                 return (
                   <motion.section
@@ -385,7 +389,7 @@ export default function KanbanBoard({
                       reduced ? { opacity: 0 } : { opacity: 0, scale: 0.95 }
                     }
                     layout={!dragging && !reduced}
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    transition={springPhysics}
                     className="board-column"
                   >
                     <div className="column-heading">

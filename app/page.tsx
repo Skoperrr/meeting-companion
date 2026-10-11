@@ -2,9 +2,9 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   Check,
-  Leaf,
+  AudioLines,
   Quote,
-  Sprout,
+  Activity,
   Fingerprint,
   Layers3,
 } from "lucide-react";
@@ -26,14 +26,14 @@ export default async function LandingPage() {
   }
   const features = [
     {
-      icon: Sprout,
-      title: "Find the commitments.",
+      icon: Activity,
+      title: "Capture the commitments.",
       description:
         "Let AI gather the decisions and actionable next steps. Unclear owners and deadlines stay explicit.",
     },
     {
       icon: Layers3,
-      title: "Make room for review.",
+      title: "Review with intention.",
       description:
         "Read each proposal beside the original conversation. Refine the details and approve what matters.",
     },
@@ -68,7 +68,8 @@ export default async function LandingPage() {
         <section className="botanical-hero">
           <div className="hero-copy">
             <span className="botanical-tag">
-              <Leaf size={12} />A calmer way to move work forward
+              <AudioLines size={12} />
+              Intelligence for every conversation
             </span>
             <h1>
               Clarity from conversation.
@@ -101,7 +102,7 @@ export default async function LandingPage() {
             aria-label="Illustrative meeting review"
           >
             <div className="preview-orbit" aria-hidden="true">
-              <Sprout size={88} strokeWidth={0.7} />
+              <Activity size={88} strokeWidth={0.7} />
             </div>
             <div className="flex items-center justify-between border-b border-botanical-border pb-5">
               <span className="botanical-eyebrow">01 / A conversation</span>
@@ -186,7 +187,7 @@ export default async function LandingPage() {
       </main>
       <footer className="botanical-footer">
         <span className="flex items-center gap-2">
-          <Leaf size={16} />
+          <AudioLines size={16} />
           Meeting Companion · StrideShift D-Lab
         </span>
         <Link href="/dashboard">

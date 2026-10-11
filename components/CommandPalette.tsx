@@ -71,7 +71,7 @@ export default function CommandPalette(props: Props) {
           onClick={(event) => {
             if (event.target === event.currentTarget) setOpen(false);
           }}
-          className="m-auto w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-0 text-white shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+          className="m-auto w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-0 text-white shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-2xl"
         >
           <Command label="Workspace commands">
             <div className="flex items-center gap-3 border-b border-white/10 px-4">

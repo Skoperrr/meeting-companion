@@ -10,12 +10,9 @@ test("avatars are deterministic across case and whitespace, with safe fallback i
   assert.equal(assigneeAppearance("Elena Adams").initials, "EA");
   assert.equal(assigneeAppearance("").initials, "?");
   assert.equal(assigneeAppearance("Unassigned").initials, "?");
-  assert.notEqual(
-    assigneeAppearance("Elena").background,
-    assigneeAppearance("Kopano").background,
-  );
+  assert.ok(assigneeAppearance("Kopano").background.includes("0%"));
 });
-test("pastel gradient endpoints exceed normal-text contrast with forest initials", () => {
+test("monochrome gradient endpoints exceed normal-text contrast with dark initials", () => {
   const luminance = (h: number, s: number, l: number) => {
     const a = s * Math.min(l, 1 - l);
     const f = (n: number) => {
@@ -28,8 +25,8 @@ test("pastel gradient endpoints exceed normal-text contrast with forest initials
   };
   for (let h = 0; h < 360; h++)
     for (const [s, l] of [
-      [0.22, 0.84],
-      [0.28, 0.78],
+      [0, 0.84],
+      [0, 0.78],
     ])
       assert.ok((luminance(h, s, l) + 0.05) / 0.067 >= 4.5);
 });
