@@ -7,8 +7,8 @@ export function assigneeAppearance(name: string) {
     hash ^= character.codePointAt(0) ?? 0;
     hash = Math.imul(hash, 16777619) >>> 0;
   }
-  const hue = hash % 360;
-  const second = (hue + 35 + ((hash >>> 8) % 65)) % 360;
+  const hue = [105, 22, 38][hash % 3] + ((hash >>> 4) % 14);
+  const second = hue + 8;
   const initials =
     normalized === "unassigned"
       ? "?"
@@ -21,6 +21,7 @@ export function assigneeAppearance(name: string) {
           .toUpperCase();
   return {
     initials,
-    background: `linear-gradient(135deg, hsl(${hue} 58% 24%), hsl(${second} 62% 26%))`,
+    foreground: "#1a241e",
+    background: `linear-gradient(135deg, hsl(${hue} 22% 84%), hsl(${second} 28% 78%))`,
   };
 }

@@ -188,11 +188,14 @@ export default function KanbanBoard({
 
   return (
     <>
-      <Toaster position="bottom-right" richColors />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{ className: "botanical-toast" }}
+      />
       <div
         role="group"
         aria-label="Board grouping"
-        className="mb-4 inline-flex rounded-xl border border-zinc-700 bg-zinc-950 p-1 text-sm"
+        className="mb-4 inline-flex rounded-xl border border-botanical-border bg-botanical-linen p-1 text-sm"
       >
         {(
           [
@@ -206,7 +209,7 @@ export default function KanbanBoard({
             aria-pressed={grouping === key}
             disabled={pending}
             onClick={() => setGrouping(key)}
-            className={`rounded-lg px-4 py-2 transition-colors disabled:opacity-50 ${grouping === key ? "bg-zinc-700 text-white shadow-sm" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
+            className={`rounded-lg px-4 py-2 transition-colors disabled:opacity-50 ${grouping === key ? "bg-botanical-forest text-botanical-paper shadow-sm" : "text-botanical-muted hover:bg-botanical-border hover:text-botanical-forest"}`}
           >
             {label}
           </button>
@@ -214,7 +217,7 @@ export default function KanbanBoard({
       </div>
       <section
         aria-label="Meeting task completion"
-        className="mb-5 rounded-xl border border-slate-200 bg-white p-4"
+        className="mb-5 rounded-xl border border-slate-200 bg-botanical-paper p-5"
       >
         <div className="mb-3 flex justify-between gap-3 text-sm">
           <span className="font-semibold text-slate-700">
@@ -236,7 +239,7 @@ export default function KanbanBoard({
         >
           <div
             style={{ width: `${percent}%` }}
-            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-[width] duration-500 ease-out motion-reduce:transition-none"
+            className="h-full rounded-full bg-gradient-to-r from-botanical-sage to-botanical-moss transition-[width] duration-500 ease-out motion-reduce:transition-none"
           />
         </div>
       </section>

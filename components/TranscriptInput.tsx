@@ -105,7 +105,7 @@ export default function TranscriptInput({
     setDemo(false);
   }
   return (
-    <section className="panel input-panel">
+    <section className="panel input-panel reflection-canvas">
       <div className="section-head">
         <div>
           <span className="eyebrow">01 / CAPTURE</span>
@@ -114,8 +114,8 @@ export default function TranscriptInput({
         <FileText className="teal" size={28} />
       </div>
       <p className="muted">
-        Paste the conversation or upload a text file. You’ll review every action
-        before it becomes a task.
+        Give your conversation a little space. Paste your notes or bring in a
+        text file. You’ll review every action before it becomes a task.
       </p>
       <form
         onSubmit={(event) => {
@@ -153,8 +153,8 @@ export default function TranscriptInput({
           </div>
           <div className="transcript-label">
             <label htmlFor="transcript">Transcript</label>
-            <label className="upload">
-              <Upload size={15} /> Upload .txt
+            <label className="upload botanical-upload">
+              <Upload size={15} /> Bring in a .txt file
               <input
                 type="file"
                 accept=".txt,text/plain"
@@ -187,6 +187,7 @@ export default function TranscriptInput({
           </div>
           <textarea
             id="transcript"
+            className="botanical-transcript"
             required
             minLength={20}
             maxLength={100000}

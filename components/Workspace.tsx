@@ -1,4 +1,5 @@
 "use client";
+import Navbar from "./Navbar";
 import { useState, useCallback } from "react";
 import {
   AudioLines,
@@ -131,7 +132,7 @@ export default function Workspace({
         <UserMenu email={email} />
       </aside>
       <div className="main-shell">
-        <header className="topbar">
+        <Navbar variant="workspace">
           <button
             className="mobile-toggle icon-button"
             aria-label="Toggle navigation"
@@ -179,7 +180,7 @@ export default function Workspace({
             <SoundToggle />
             <MeetSyncModal onSynced={refresh} />
           </div>
-        </header>
+        </Navbar>
         <main>
           {error && (
             <div className="error" role="alert">
