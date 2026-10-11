@@ -22,6 +22,7 @@ export default function TaskCalendarButton({
         className="icon-button"
       >
         <CalendarPlus size={16} />
+        <span className="calendar-caption">Add to Google Calendar</span>
       </a>
       {event.usedFallback && (
         <span

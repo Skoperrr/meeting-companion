@@ -1,6 +1,8 @@
 "use client";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
+import { endOfWeek, startOfDay, parseISO } from "date-fns";
+import { spokenDeadline } from "@/lib/smart-date";
 import KanbanBoard from "./KanbanBoard";
 import { statuses, type Task } from "@/lib/schemas";
 import { filterTasks, type TaskFilters } from "@/lib/productivity";
@@ -26,6 +28,7 @@ export default function TaskBoard({
       ? params.get("status")
       : "") as TaskFilters["status"],
     search: params.get("q") ?? "",
+    dueWeek: params.get("due") === "week",
   });
   const [source, setSource] = useState(query);
   const [filters, setLocalFilters] = useState(read);
@@ -44,6 +47,7 @@ export default function TaskBoard({
       priority: value.priority,
       status: value.status,
       q: value.search,
+      due: value.dueWeek ? "week" : "",
     })) {
       if (text) updated.set(key, text);
       else updated.delete(key);
@@ -55,10 +59,24 @@ export default function TaskBoard({
   }
   const visible = filterTasks(tasks, filters).filter(
     (task) =>
-      !filters.search ||
-      [task.title, task.description, task.assigned_to].some((text) =>
-        text.toLowerCase().includes(filters.search.toLowerCase()),
-      ),
+      (!filters.dueWeek ||
+        (() => {
+          const today = startOfDay(new Date());
+          const deadline = spokenDeadline(
+            task.due_date,
+            task.meeting_date ? parseISO(task.meeting_date) : today,
+          );
+          return (
+            deadline !== null &&
+            deadline >= today &&
+            deadline <= endOfWeek(today, { weekStartsOn: 1 }) &&
+            task.status !== "Completed"
+          );
+        })()) &&
+      (!filters.search ||
+        [task.title, task.description, task.assigned_to].some((text) =>
+          text.toLowerCase().includes(filters.search.toLowerCase()),
+        )),
   );
   const assignees = [...new Set(tasks.map((t) => t.assigned_to))].sort((a, b) =>
     a.localeCompare(b),
@@ -68,7 +86,7 @@ export default function TaskBoard({
       <div className="section-head">
         <div>
           <span className="eyebrow">03 / FOLLOW THROUGH</span>
-          <h2>Action board</h2>
+          <h2>Commitment Tracking</h2>
           <p className="muted">Every task has a meeting behind it.</p>
         </div>
         <span className="count-pill">{tasks.length} action items</span>
@@ -146,10 +164,16 @@ export default function TaskBoard({
           type="button"
           className="secondary"
           onClick={() =>
-            setFilters({ assignee: "", priority: "", status: "", search: "" })
+            setFilters({
+              assignee: "",
+              priority: "",
+              status: "",
+              search: "",
+              dueWeek: false,
+            })
           }
         >
-          Clear filters
+          {filters.dueWeek ? "Due this week · Clear filters" : "Clear filters"}
         </button>
         <span role="status" className="ml-auto text-sm text-slate-500">
           Showing {visible.length} of {tasks.length} tasks
