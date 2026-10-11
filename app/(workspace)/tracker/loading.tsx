@@ -2,7 +2,12 @@ import TaskCardSkeleton from "@/components/TaskCardSkeleton";
 import { statuses } from "@/lib/schemas";
 export default function Loading() {
   return (
-    <main className="p-6 sm:p-10" aria-busy="true">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="p-6 sm:p-10"
+      aria-busy="true"
+    >
       <p role="status" className="sr-only">
         Loading your task board...
       </p>

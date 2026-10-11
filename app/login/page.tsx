@@ -7,7 +7,11 @@ export default async function Login({
 }) {
   const query = await searchParams;
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f6f4ed] px-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex min-h-screen items-center justify-center bg-[#f6f4ed] px-6"
+    >
       <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <p className="mb-4 text-xs font-bold tracking-[.2em] text-slate-500">
           STRIDESHIFT / MEETING COMPANION

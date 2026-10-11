@@ -1,18 +1,104 @@
 "use client";
-import { useId } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { fluidEase } from "@/lib/motion";
+import { memo, useEffect, useId, useRef } from "react";
 export type ProcessingPhase =
   "idle" | "fetching" | "analyzing" | "dispatching" | "success" | "error";
-export default function MeetingSyncCard({
-  title,
-  date,
-  phase,
-  characters = 0,
-  decisions = 0,
-  tasks = 0,
-  onProcess,
-}: {
+function Waveform({ active }: { active: boolean }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    const context = canvas?.getContext("2d");
+    if (!canvas || !context) return;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0,
+      visible = false,
+      focused = document.hasFocus(),
+      width = 320,
+      height = 120,
+      last = 0;
+    const draw = (time: number) => {
+      context.clearRect(0, 0, width, height);
+      for (let layer = 0; layer < 3; layer++) {
+        context.beginPath();
+        context.strokeStyle = `rgba(255,255,255,${0.18 + layer * 0.12})`;
+        context.lineWidth = 1;
+        for (let x = 0; x <= width; x += 3) {
+          const envelope = Math.sin((Math.PI * x) / width) ** 2;
+          const y =
+            height / 2 +
+            Math.sin((x / width) * Math.PI * 4 + time / 1400 + layer * 0.65) *
+              envelope *
+              (16 + layer * 7);
+          if (x === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        }
+        context.stroke();
+      }
+    };
+    const tick = (time: number) => {
+      if (time - last >= 32) {
+        draw(time);
+        last = time;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    const reconcile = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      if (active && visible && focused && !document.hidden && !media.matches)
+        frame = requestAnimationFrame(tick);
+      else if (visible) draw(0);
+    };
+    const resize = () => {
+      const bounds = canvas.getBoundingClientRect();
+      width = Math.max(1, bounds.width);
+      height = Math.max(1, bounds.height);
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      reconcile();
+    };
+    const intersection = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      reconcile();
+    });
+    const observer = new ResizeObserver(resize);
+    const onFocus = () => {
+      focused = true;
+      reconcile();
+    };
+    const onBlur = () => {
+      focused = false;
+      reconcile();
+    };
+    intersection.observe(canvas);
+    observer.observe(canvas);
+    resize();
+    document.addEventListener("visibilitychange", reconcile);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur", onBlur);
+    media.addEventListener("change", reconcile);
+    return () => {
+      cancelAnimationFrame(frame);
+      intersection.disconnect();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", reconcile);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("blur", onBlur);
+      media.removeEventListener("change", reconcile);
+    };
+  }, [active]);
+  return (
+    <canvas
+      ref={ref}
+      aria-hidden="true"
+      className="my-6 h-32 w-full"
+      width={640}
+      height={256}
+    />
+  );
+}
+type Props = {
   title: string;
   date: string;
   phase: ProcessingPhase;
@@ -20,114 +106,74 @@ export default function MeetingSyncCard({
   decisions?: number;
   tasks?: number;
   onProcess?: () => void;
-}) {
-  const reduced = useReducedMotion();
-  const gradient = useId();
+};
+function MeetingSyncCard({
+  title,
+  date,
+  phase,
+  characters = 0,
+  decisions = 0,
+  tasks = 0,
+  onProcess,
+}: Props) {
+  const heading = useId();
   const active = ["fetching", "analyzing", "dispatching"].includes(phase);
   const labels: Record<ProcessingPhase, string> = {
     idle: "Ready to process a meeting",
-    fetching: "Fetching transcript & attendees…",
-    analyzing: "Extracting decisions & tasks…",
+    fetching: "Fetching transcript and attendees…",
+    analyzing: "Extracting decisions and tasks…",
     dispatching: "Saving the meeting…",
-    success: `${decisions} Decisions & ${tasks} Proposed Tasks`,
+    success: `${decisions} decisions · ${tasks} proposed tasks`,
     error: "Processing needs attention",
   };
-  const progress =
-    phase === "success"
-      ? 100
-      : phase === "dispatching"
-        ? 85
-        : phase === "analyzing"
-          ? 55
-          : phase === "fetching"
-            ? 20
-            : 0;
   return (
-    <section
-      aria-label="Meeting analysis and sync"
-      className="processing-pod luxury-pod"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-serif text-xl text-white">
-          Meeting Analysis &amp; Sync
+    <section aria-labelledby={heading} className="processing-pod craft-pod">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h2
+          id={heading}
+          className="text-xl font-semibold tracking-[-0.02em] text-white"
+        >
+          Meeting analysis
         </h2>
-        {onProcess ? (
-          <button className="luxury-filter" onClick={onProcess}>
-            Process
+        {onProcess && (
+          <button type="button" className="craft-button" onClick={onProcess}>
+            {phase === "success" ? "View meeting" : "Process"}
           </button>
-        ) : (
-          <span className="luxury-filter">
-            {active ? "Processing" : "Analysis"}
-          </span>
         )}
       </div>
-      <div className="mt-10">
-        <p className="text-xs text-text-secondary">Current meeting</p>
-        <h3 className="mt-3 font-serif text-3xl leading-tight text-white">
+      <div className="mt-8">
+        <p className="craft-label">Current meeting</p>
+        <h3 className="mt-3 text-[clamp(1.5rem,3vw,2.25rem)] font-semibold leading-tight tracking-[-0.02em] text-white">
           {title || "Your next conversation"}
         </h3>
-        <p className="mt-3 text-xs text-text-secondary">
+        <p className="mt-4 text-sm text-text-secondary">
           {date || "Choose a meeting to begin"}
         </p>
       </div>
-      <svg viewBox="0 0 360 160" className="my-10 w-full" aria-hidden="true">
-        <defs>
-          <linearGradient id={gradient}>
-            <stop stopColor="white" stopOpacity="0" />
-            <stop offset=".5" stopColor="white" stopOpacity=".9" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {Array.from({ length: 7 }, (_, index) => (
-          <motion.path
-            key={index}
-            d={`M0 80 C40 ${22 + index * 7},70 ${138 - index * 7},120 80 S190 ${22 + index * 7},240 80 S315 ${138 - index * 7},360 80`}
-            stroke={`url(#${gradient})`}
-            strokeWidth={index === 3 ? 1.5 : 0.7}
-            fill="none"
-            initial={false}
-            animate={
-              active && !reduced
-                ? {
-                    opacity: [0.2, 0.8, 0.2],
-                    y: [-5, 5, -5],
-                    scaleY: [0.85, 1.2, 0.85],
-                  }
-                : { opacity: 0.35, y: 0, scaleY: 1 }
-            }
-            transition={{
-              duration: 5,
-              repeat: active && !reduced ? Infinity : 0,
-              delay: index * 0.2,
-              ease: fluidEase,
-            }}
-          />
-        ))}
-      </svg>
-      <div className="mt-auto border-t border-white/[.08] pt-5">
+      <Waveform active={active} />
+      <div className="mt-auto border-t border-white/[.07] pt-6">
         <p className="text-xs text-text-secondary">
-          {characters.toLocaleString()} character transcript
-          {characters === 0 ? " · Awaiting input" : ""}
+          {characters.toLocaleString()} characters
+          {characters === 0 ? " · Awaiting transcript" : ""}
         </p>
+        {active && (
+          <div
+            className="my-4 h-1 overflow-hidden rounded bg-white/10"
+            aria-hidden="true"
+          >
+            <div className="craft-processing-indicator h-full w-1/3 bg-white/70" />
+          </div>
+        )}
         <div
-          role="progressbar"
-          aria-label="Meeting processing"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-          className="my-4 h-1 overflow-hidden rounded-full bg-white/10"
+          aria-live="polite"
+          aria-atomic="true"
+          role="status"
+          className="mt-4 min-h-10 text-sm leading-5 text-text-secondary"
         >
-          <motion.div
-            initial={false}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: reduced ? 0 : 0.8, ease: fluidEase }}
-            className="h-full bg-white"
-          />
-        </div>
-        <p role="status" className="text-xs text-white/75">
           {labels[phase]}
-        </p>
+        </div>
       </div>
     </section>
   );
 }
+export default memo(MeetingSyncCard);

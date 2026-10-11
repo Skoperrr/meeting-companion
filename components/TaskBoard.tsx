@@ -3,7 +3,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { endOfWeek, startOfDay, parseISO } from "date-fns";
 import { spokenDeadline } from "@/lib/smart-date";
-import KanbanBoard from "./KanbanBoard";
+import KanbanBoard from "./CommitmentBoard";
 import { statuses, type Task } from "@/lib/schemas";
 import { filterTasks, type TaskFilters } from "@/lib/productivity";
 export default function TaskBoard({

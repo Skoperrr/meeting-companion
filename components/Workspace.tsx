@@ -8,7 +8,6 @@ import {
 import DashboardHeader from "./DashboardHeader";
 import DashboardOverview from "./DashboardOverview";
 import MeetingSyncCard from "./MeetingSyncCard";
-import CommitmentBoard from "./CommitmentBoard";
 import { useState, useCallback } from "react";
 import {
   AudioLines,
@@ -51,7 +50,6 @@ export default function Workspace({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [navOpen, setNavOpen] = useState(false);
-  const [hoverScale, setHoverScale] = useState(true);
   const refresh = useCallback(async () => {
     try {
       const r = await fetch("/api/meetings", { cache: "no-store" });
@@ -106,9 +104,7 @@ export default function Workspace({
   ).length;
   const blocked = data.tasks.filter((t) => t.status === "Blocked").length;
   return (
-    <div
-      className={`app-shell luxury-workspace ${hoverScale ? "enable-hover-scale" : ""}`}
-    >
+    <div className="app-shell luxury-workspace craft-workspace">
       <aside className={`sidebar ${navOpen ? "open" : ""}`}>
         <div className="brand">
           <span className="brand-icon">
@@ -119,7 +115,7 @@ export default function Workspace({
           </div>
         </div>
         <div className="workspace-label">D-LAB WORKSPACE</div>
-        <nav>
+        <nav aria-label="Main Navigation">
           {(
             [
               ["overview", LayoutDashboard, "Overview"],
@@ -157,7 +153,7 @@ export default function Workspace({
           >
             {navOpen ? <X /> : <Menu />}
           </button>
-          <div className="luxury-nav-tabs">
+          <nav aria-label="Workspace pages" className="luxury-nav-tabs">
             <button
               className={
                 view === "overview" ? "luxury-nav-active" : "luxury-filter"
@@ -182,7 +178,7 @@ export default function Workspace({
             >
               Tracker
             </button>
-          </div>
+          </nav>
           <div className="sr-only">
             <span className="topbar-project">Workspace</span>
             <span className="divider">/</span>
@@ -228,7 +224,7 @@ export default function Workspace({
             </span>
           </div>
         </DashboardHeader>
-        <main>
+        <main id="main-content" tabIndex={-1}>
           {error && (
             <div className="error" role="alert">
               {error}{" "}
@@ -249,8 +245,6 @@ export default function Workspace({
                   <DashboardOverview
                     completed={completed}
                     total={data.tasks.length}
-                    hoverScale={hoverScale}
-                    onHoverScale={() => setHoverScale((current) => !current)}
                     onPriority={() => {
                       setView("board");
                       router.push("/tracker?priority=High");
@@ -260,8 +254,8 @@ export default function Workspace({
                       router.push("/tracker?due=week");
                     }}
                   />
-                  <div className="luxury-dashboard-grid">
-                    <div className="min-w-0">
+                  <div className="craft-dashboard-grid grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+                    <div className="min-w-0 lg:col-span-4">
                       <MeetingSyncCard
                         title={data.meetings[0]?.title ?? ""}
                         date={data.meetings[0]?.meeting_date ?? ""}
@@ -287,10 +281,10 @@ export default function Workspace({
                       </button>
                     </div>
                     <section
-                      className="luxury-commitments min-w-0"
+                      className="luxury-commitments min-w-0 lg:col-span-8"
                       aria-label="Commitment tracking"
                     >
-                      <CommitmentBoard
+                      <TaskBoard
                         tasks={data.tasks}
                         onUpdated={refresh}
                         onMeeting={openMeeting}
