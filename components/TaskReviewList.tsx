@@ -19,9 +19,9 @@ type StagedTask = Proposal & { proposal_index: number; approved: boolean };
 type Props = { meeting: Meeting; onSaved: () => Promise<void> };
 
 const fieldClass =
-  "!rounded-lg !border-[#dbd5c9] !bg-[#fffefb] !text-sm !text-[#1c2b3c] focus:!outline-[#537d9f]";
+  "!rounded-lg !border-[#ffffff20] !bg-[#16181D] !text-sm !text-[#8E9099] focus:!outline-[#537d9f]";
 const actionClass =
-  "inline-flex items-center justify-center gap-2 rounded-lg !border !border-[#dbd5c9] !bg-[#fffefb] px-3 py-2 text-sm font-medium !text-[#22374e] hover:!bg-[#ede9e1] disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-lg !border !border-[#ffffff20] !bg-[#16181D] px-3 py-2 text-sm font-medium !text-[#8E9099] hover:!bg-[#16181D] disabled:opacity-50";
 
 // Keying the inner stage prevents edits leaking into a different meeting.
 export default function TaskReviewList(props: Props) {
@@ -247,20 +247,20 @@ function ReviewStage({ meeting, onSaved }: Props) {
           <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
             <section
               aria-labelledby="transcript-heading"
-              className="min-w-0 overflow-hidden rounded-2xl border border-[#e2ddd2] bg-[#fbfaf7] xl:sticky xl:top-5"
+              className="min-w-0 overflow-hidden rounded-2xl border border-[#ffffff20] bg-[#16181D] xl:sticky xl:top-5"
             >
-              <div className="flex items-center justify-between gap-3 border-b border-[#e2ddd2] px-5 py-4">
+              <div className="flex items-center justify-between gap-3 border-b border-[#ffffff20] px-5 py-4">
                 <h3 id="transcript-heading" className="flex items-center gap-2">
-                  <FileText size={18} className="text-[#537d9f]" />
+                  <FileText size={18} className="text-[#8E9099]" />
                   Original transcript
                 </h3>
-                <span className="text-xs text-[#687586]">SOURCE OF TRUTH</span>
+                <span className="text-xs text-[#8E9099]">SOURCE OF TRUTH</span>
               </div>
               <div
                 ref={transcriptRef}
                 tabIndex={0}
                 aria-label="Original meeting transcript"
-                className="max-h-[40vh] overflow-y-auto overscroll-contain p-5 text-base leading-8 text-[#3c4b5c] focus-visible:outline-2 focus-visible:outline-[#537d9f] xl:h-[65vh] xl:max-h-[780px]"
+                className="max-h-[40vh] overflow-y-auto overscroll-contain p-5 text-base leading-8 text-[#8E9099] focus-visible:outline-2 focus-visible:outline-[#537d9f] xl:h-[65vh] xl:max-h-[780px]"
               >
                 <div className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                   {quoteRange ? (
@@ -268,7 +268,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                       {meeting.transcript.slice(0, quoteRange.start)}
                       <mark
                         ref={highlightRef}
-                        className="rounded-sm bg-amber-200 px-0.5 py-0.5 text-[#49370e] shadow-[0_0_0_2px_#fde68a]"
+                        className="rounded-sm bg-amber-200 px-0.5 py-0.5 text-[#8E9099] shadow-[0_0_0_2px_#fde68a]"
                       >
                         {meeting.transcript.slice(
                           quoteRange.start,
@@ -283,7 +283,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                 </div>
               </div>
               <div
-                className="border-t border-[#e2ddd2] px-5 py-3 text-sm text-[#596674]"
+                className="border-t border-[#ffffff20] px-5 py-3 text-sm text-[#8E9099]"
                 role="status"
                 aria-live="polite"
               >
@@ -296,14 +296,14 @@ function ReviewStage({ meeting, onSaved }: Props) {
             </section>
             <section
               aria-labelledby="proposals-heading"
-              className="min-w-0 overflow-hidden rounded-2xl border border-[#e2ddd2] bg-[#f0ede6]"
+              className="min-w-0 overflow-hidden rounded-2xl border border-[#ffffff20] bg-[#16181D]"
             >
-              <div className="space-y-3 border-b border-[#e2ddd2] bg-[#fbfaf7] p-5">
+              <div className="space-y-3 border-b border-[#ffffff20] bg-[#16181D] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 id="proposals-heading">Proposed actions</h3>
                   <span
                     aria-live="polite"
-                    className="rounded-full bg-[#e0eaf3] px-3 py-1 text-sm text-[#223e59]"
+                    className="rounded-full bg-[#16181D] px-3 py-1 text-sm text-[#8E9099]"
                   >
                     Approved {approved.length} of {rows.length} tasks
                   </span>
@@ -343,7 +343,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                 className="space-y-4 overflow-y-auto overscroll-contain p-4 focus-visible:outline-2 focus-visible:outline-[#537d9f] xl:max-h-[65vh]"
               >
                 {!rows.length && (
-                  <div className="rounded-xl bg-[#fbfaf7] p-6 text-sm text-[#596674]">
+                  <div className="rounded-xl bg-[#16181D] p-6 text-sm text-[#8E9099]">
                     No actionable commitments were found. You can finish the
                     review without creating tasks.
                   </div>
@@ -360,7 +360,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                       onMouseEnter={() => selectEvidence(index)}
                       onClick={() => selectEvidence(index)}
                       onFocusCapture={() => selectEvidence(index)}
-                      className={`review-arrival min-w-0 rounded-xl border bg-[#fbfaf7] p-4 shadow-sm ${activeIndex === index ? "border-[#537d9f] ring-2 ring-[#537d9f]/20" : "border-[#ded8cd]"}`}
+                      className={`review-arrival min-w-0 rounded-xl border bg-[#16181D] p-4 shadow-sm ${activeIndex === index ? "border-[#ffffff20] ring-2 ring-[#ffffff20]/20" : "border-[#ffffff20]"}`}
                     >
                       <label className="mb-3 flex items-center gap-2 text-xs text-botanical-muted">
                         <input
@@ -379,7 +379,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                         Select for batch actions
                       </label>
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                        <label className="flex !items-center gap-2 !text-sm !font-semibold !text-[#22374e]">
+                        <label className="flex !items-center gap-2 !text-sm !font-semibold !text-[#8E9099]">
                           <input
                             type="checkbox"
                             checked={task.approved}
@@ -390,7 +390,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                           />
                           Action {index + 1}
                           <span
-                            className={`rounded px-2 py-0.5 text-xs ${task.approved ? "bg-[#e2f4e9] text-[#367155]" : "bg-[#ede9e1] text-[#687586]"}`}
+                            className={`rounded px-2 py-0.5 text-xs ${task.approved ? "bg-[#16181D] text-[#8E9099]" : "bg-[#16181D] text-[#8E9099]"}`}
                           >
                             {task.approved ? "Approved" : "Rejected"}
                           </span>
@@ -498,7 +498,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
                         <button
                           type="button"
                           onClick={() => selectEvidence(index)}
-                          className="flex w-full items-start gap-2 rounded-lg !bg-[#edf2f6] p-3 text-left text-sm leading-6 !text-[#466b8c]"
+                          className="flex w-full items-start gap-2 rounded-lg !bg-[#16181D] p-3 text-left text-sm leading-6 !text-[#8E9099]"
                           aria-controls="transcript-heading"
                         >
                           <Quote size={16} className="mt-1 shrink-0" />
@@ -519,8 +519,8 @@ function ReviewStage({ meeting, onSaved }: Props) {
             {error}
           </p>
         )}
-        <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-xl border border-[#e2ddd2] bg-[#fbfaf7] p-5 sm:flex-row sm:items-center">
-          <p className="text-sm leading-6 text-[#596674]">
+        <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-xl border border-[#ffffff20] bg-[#16181D] p-5 sm:flex-row sm:items-center">
+          <p className="text-sm leading-6 text-[#8E9099]">
             {approved.length
               ? "Only approved tasks will be saved, with their original source evidence."
               : "Committing with zero approvals finishes this review without creating tasks."}

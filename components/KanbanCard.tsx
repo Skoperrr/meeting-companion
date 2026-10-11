@@ -1,5 +1,6 @@
 "use client";
-import { AnimatePresence } from "framer-motion";
+import { fluidEase } from "@/lib/motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Draggable } from "@hello-pangea/dnd";
 import { GripVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -26,6 +27,8 @@ export default function KanbanCard({
   onMeeting: (id: string) => void;
   onAssignee: (name: string) => void;
 }) {
+  const reduced = useReducedMotion();
+  const [quoteOpen, setQuoteOpen] = useState(false);
   const [evidence, setEvidence] = useState(false);
   const hovered = useRef(false);
   const card = useRef<HTMLDivElement | null>(null);
@@ -115,6 +118,33 @@ export default function KanbanCard({
                   onMeeting={onMeeting}
                   onEvidence={() => setEvidence(true)}
                 />
+              </AnimatePresence>
+              <button
+                type="button"
+                aria-expanded={quoteOpen}
+                onClick={() => setQuoteOpen((current) => !current)}
+                className="w-full border-t border-white/[.08] px-5 py-3 text-left text-xs text-text-secondary"
+              >
+                {quoteOpen ? "−" : "+"} Verbatim evidence
+              </button>
+              <AnimatePresence initial={false}>
+                {quoteOpen && (
+                  <motion.div
+                    key="quote"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{
+                      duration: reduced ? 0 : 0.6,
+                      ease: fluidEase,
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <blockquote className="mx-5 mb-5 whitespace-pre-wrap border-l border-white/20 pl-4 text-xs leading-7 text-text-secondary">
+                      {task.transcript_quote}
+                    </blockquote>
+                  </motion.div>
+                )}
               </AnimatePresence>
             </div>
           </div>

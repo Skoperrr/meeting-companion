@@ -12,7 +12,7 @@ export async function celebrateCompletion(): Promise<void> {
       startVelocity: 24,
       gravity: 1.1,
       origin: { x: 0.75, y: 0.65 },
-      colors: ["#6366f1", "#10b981", "#fcd34d"],
+      colors: ["#ffffff", "#8e9099", "#52545d"],
       disableForReducedMotion: true,
       zIndex: 1000,
     });
