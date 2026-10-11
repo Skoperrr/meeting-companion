@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { memo, useEffect, useRef, useState } from "react";
 import { AlertCircle, Link2, Quote, Trash2, UserRound } from "lucide-react";
 import { statuses, type Task } from "@/lib/schemas";
 import { isTaskOverdue } from "@/lib/task-overdue";
@@ -7,6 +8,7 @@ import SmartDateBadge from "./SmartDateBadge";
 import TaskCalendarButton from "./TaskCalendarButton";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 type Props = {
+  isDragging?: boolean;
   task: Task;
   saving: boolean;
   onDueChange: (value: string) => Promise<void>;
@@ -15,7 +17,8 @@ type Props = {
   onMeeting: (id: string) => void;
   onEvidence: () => void;
 };
-export default function TaskCard({
+function TaskCard({
+  isDragging = false,
   task,
   saving,
   onDueChange,
@@ -24,6 +27,7 @@ export default function TaskCard({
   onMeeting,
   onEvidence,
 }: Props) {
+  const reduced = useReducedMotion();
   const [confirm, setConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
@@ -51,7 +55,13 @@ export default function TaskCard({
     }
   }
   return (
-    <article className="task-card border transition-all duration-300 hover:-translate-y-0.5 hover:border-botanical-sage hover:shadow-paper motion-reduce:transform-none motion-reduce:transition-none">
+    <motion.article
+      data-task-id={task.id}
+      layout={!reduced && !isDragging}
+      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="task-card border transition-all duration-300 hover:-translate-y-0.5 hover:border-botanical-sage hover:shadow-paper motion-reduce:transform-none motion-reduce:transition-none"
+    >
       <div className="card-top">
         <TaskCalendarButton task={task} referenceDate={task.meeting_date} />
         <span className={`badge priority-${task.priority.toLowerCase()}`}>
@@ -143,6 +153,8 @@ export default function TaskCard({
           onConfirm={() => void remove()}
         />
       )}
-    </article>
+    </motion.article>
   );
 }
+
+export default memo(TaskCard);

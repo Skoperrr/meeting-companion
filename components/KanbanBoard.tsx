@@ -1,5 +1,9 @@
 "use client";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useOptimisticMutation } from "@/hooks/useOptimisticMutation";
+import VirtualTaskList from "./VirtualTaskList";
+import TaskCard from "./TaskCard";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { DragDropContext, Droppable, type DropResult } from "@hello-pangea/dnd";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
@@ -33,7 +37,26 @@ export default function KanbanBoard({
     () => false,
   );
   const [snapshot, setSnapshot] = useState({ source: tasks, items: tasks });
-  const [pending, setPending] = useState(false);
+  const read = useCallback(() => snapshot.items, [snapshot.items]);
+  const write = useCallback(
+    (items: Task[]) => setSnapshot((current) => ({ ...current, items })),
+    [],
+  );
+  const mutation = useOptimisticMutation(read, write);
+  const pending = mutation.pending;
+  const [ghosts, setGhosts] = useState<
+    {
+      key: string;
+      task: Task;
+      top: number;
+      left: number;
+      width: number;
+      height: number;
+    }[]
+  >([]);
+  const [dragging, setDragging] = useState(false);
+  const reduced = useReducedMotion();
+  const [listMode, setListMode] = useState(false);
   const lock = useRef(false);
   const [optimistic, setOptimistic] = useState<
     Record<string, BoardPatch | null>
@@ -93,74 +116,73 @@ export default function KanbanBoard({
   ) {
     if (lock.current) return;
     lock.current = true;
-    setPending(true);
-    const before = snapshot.items;
+    if (
+      !reduced &&
+      (!patch || (patch.status && patch.status !== task.status))
+    ) {
+      const rect = document
+        .querySelector(`[data-task-id="${task.id}"]`)
+        ?.getBoundingClientRect();
+      if (rect)
+        setGhosts((current) => [
+          ...current,
+          {
+            key: crypto.randomUUID(),
+            task,
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+          },
+        ]);
+    }
     setOptimistic((current) => ({ ...current, [task.id]: patch ?? null }));
-    setSnapshot((current) => ({
-      ...current,
-      items: nextItems ?? current.items.filter((item) => item.id !== task.id),
-    }));
     if (patch?.status === "Completed" && task.status !== "Completed") {
       playTaskSound("complete");
       void celebrateCompletion();
     }
-    let saved = false;
-    try {
-      const response = await fetch(
-        `/api/tasks/${encodeURIComponent(task.id)}`,
-        {
-          method: patch ? "PATCH" : "DELETE",
-          ...(patch
-            ? {
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  ...(patch.due_date !== undefined
-                    ? { due_date: patch.due_date }
-                    : {}),
-                  ...(patch.status !== undefined
-                    ? { status: patch.status }
-                    : {}),
-                  ...(patch.assigned_to !== undefined
-                    ? { assigned_to: patch.assigned_to }
-                    : {}),
-                }),
-              }
-            : {}),
-        },
-      );
-      if (!response.ok) {
-        const body: unknown = await response.json().catch(() => null);
-        throw new Error(
-          body &&
-            typeof body === "object" &&
-            "error" in body &&
-            typeof body.error === "string"
-            ? body.error
-            : "Could not save this change. The card has been restored.",
+    const saved = await mutation.mutate(
+      () => nextItems ?? snapshot.items.filter((item) => item.id !== task.id),
+      async () => {
+        const response = await fetch(
+          `/api/tasks/${encodeURIComponent(task.id)}`,
+          {
+            method: patch ? "PATCH" : "DELETE",
+            ...(patch
+              ? {
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ ...patch, assigned_email: undefined }),
+                }
+              : {}),
+          },
         );
-      }
-      saved = true;
-    } catch (error) {
+        if (!response.ok) {
+          const body: unknown = await response.json().catch(() => null);
+          throw new Error(
+            body &&
+              typeof body === "object" &&
+              "error" in body &&
+              typeof body.error === "string"
+              ? body.error
+              : "Could not save this change. Restored the previous state.",
+          );
+        }
+      },
+    );
+    lock.current = false;
+    if (!saved)
       setOptimistic((current) =>
         Object.fromEntries(
           Object.entries(current).filter(([id]) => id !== task.id),
         ),
       );
-      setSnapshot((current) => ({ ...current, items: before }));
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not save this change. The card has been restored.",
-      );
-    } finally {
-      lock.current = false;
-      setPending(false);
-    }
     if (saved) await refresh();
     else if (throwOnFailure)
       throw new Error("Deadline was not saved. Try again.");
   }
+
   function drop(result: DropResult) {
+    setDragging(false);
     if (lock.current || !result.destination || result.reason === "CANCEL")
       return;
     const task = items.find((task) => task.id === result.draggableId);
@@ -198,6 +220,42 @@ export default function KanbanBoard({
 
   return (
     <>
+      <AnimatePresence>
+        {ghosts.map((ghost) => (
+          <motion.div
+            key={ghost.key}
+            aria-hidden="true"
+            inert
+            initial={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            onAnimationComplete={() =>
+              setGhosts((current) =>
+                current.filter((item) => item.key !== ghost.key),
+              )
+            }
+            style={{
+              position: "fixed",
+              top: ghost.top,
+              left: ghost.left,
+              width: ghost.width,
+              height: ghost.height,
+              pointerEvents: "none",
+              zIndex: 60,
+            }}
+          >
+            <TaskCard
+              task={ghost.task}
+              saving={true}
+              onStatusChange={async () => {}}
+              onDueChange={async () => {}}
+              onDelete={async () => {}}
+              onMeeting={() => {}}
+              onEvidence={() => {}}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
       <Toaster
         position="bottom-right"
         toastOptions={{ className: "botanical-toast" }}
@@ -253,7 +311,49 @@ export default function KanbanBoard({
           />
         </div>
       </section>
-      {!mounted ? (
+      <button
+        type="button"
+        onClick={() => setListMode((current) => !current)}
+        className="botanical-secondary mb-4"
+      >
+        {listMode ? "View Kanban board" : "View compact task list"}
+      </button>
+      {listMode ? (
+        <VirtualTaskList
+          items={items}
+          getKey={(task) => task.id}
+          label="Task list"
+          estimate={320}
+          renderItem={(task) => (
+            <TaskCard
+              task={task}
+              saving={pending}
+              onStatusChange={(status) =>
+                mutate(
+                  task,
+                  { status },
+                  items.map((item) =>
+                    item.id === task.id ? { ...item, status } : item,
+                  ),
+                )
+              }
+              onDueChange={(due_date) =>
+                mutate(
+                  task,
+                  { due_date },
+                  items.map((item) =>
+                    item.id === task.id ? { ...item, due_date } : item,
+                  ),
+                  true,
+                )
+              }
+              onDelete={() => mutate(task)}
+              onMeeting={onMeeting}
+              onEvidence={() => onMeeting(task.meeting_id)}
+            />
+          )}
+        />
+      ) : !mounted ? (
         <div className="board" aria-busy="true">
           <span className="sr-only" role="status">
             Loading interactive board...
@@ -266,81 +366,94 @@ export default function KanbanBoard({
           ))}
         </div>
       ) : (
-        <DragDropContext onDragEnd={drop}>
+        <DragDropContext onDragStart={() => setDragging(true)} onDragEnd={drop}>
           <div
             className="board"
             style={{
               gridTemplateColumns: `repeat(${columns.length}, minmax(260px, 1fr))`,
             }}
           >
-            {columns.map((status, index) => {
-              const column = items.filter((task) => task[grouping] === status);
-              return (
-                <section key={status} className="board-column">
-                  <div className="column-heading">
-                    <span className={`status-marker marker-${index}`} />
-                    <h3>{status}</h3>
-                    <span>{column.length}</span>
-                  </div>
-                  <Droppable droppableId={status} isDropDisabled={pending}>
-                    {(provided, state) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className={`column-cards min-h-40 rounded-xl p-1 transition-colors duration-200 ${state.isDraggingOver ? "bg-indigo-100/50 ring-2 ring-indigo-300/50" : ""}`}
-                      >
-                        {column.map((task, index) => (
-                          <KanbanCard
-                            key={task.id}
-                            task={task}
-                            index={index}
-                            disabled={pending}
-                            onDueChange={(due_date) =>
-                              mutate(
-                                task,
-                                { due_date },
-                                items.map((item) =>
-                                  item.id === task.id
-                                    ? { ...item, due_date }
-                                    : item,
-                                ),
-                                true,
-                              )
-                            }
-                            onStatusChange={(status) =>
-                              mutate(
-                                task,
-                                { status },
-                                moveKanbanTask(
-                                  items,
-                                  task.id,
-                                  status,
-                                  items.filter((item) => item.status === status)
-                                    .length,
-                                ),
-                              )
-                            }
-                            onDelete={() => mutate(task)}
-                            onMeeting={onMeeting}
-                            onAssignee={onAssignee}
-                          />
-                        ))}
-                        {provided.placeholder}
-                        {!column.length && (
-                          <div
-                            className={`rounded-xl border border-dotted px-4 py-8 text-center text-xs ${state.isDraggingOver ? "border-indigo-400 bg-indigo-200/30 text-indigo-600" : "border-slate-300 text-slate-400"}`}
-                          >
-                            {state.isDraggingOver
-                              ? "Drop task here"
-                              : "No tasks here"}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Droppable>
-                </section>
-              );
-            })}
+            <AnimatePresence initial={false}>
+              {columns.map((status, index) => {
+                const column = items.filter(
+                  (task) => task[grouping] === status,
+                );
+                return (
+                  <motion.section
+                    key={status}
+                    exit={
+                      reduced ? { opacity: 0 } : { opacity: 0, scale: 0.95 }
+                    }
+                    layout={!dragging && !reduced}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="board-column"
+                  >
+                    <div className="column-heading">
+                      <span className={`status-marker marker-${index}`} />
+                      <h3>{status}</h3>
+                      <span>{column.length}</span>
+                    </div>
+                    <Droppable droppableId={status} isDropDisabled={pending}>
+                      {(provided, state) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`column-cards min-h-40 rounded-xl p-1 transition-colors duration-200 ${state.isDraggingOver ? "bg-indigo-100/50 ring-2 ring-indigo-300/50" : ""}`}
+                        >
+                          {column.map((task, index) => (
+                            <KanbanCard
+                              key={task.id}
+                              task={task}
+                              index={index}
+                              disabled={pending}
+                              onDueChange={(due_date) =>
+                                mutate(
+                                  task,
+                                  { due_date },
+                                  items.map((item) =>
+                                    item.id === task.id
+                                      ? { ...item, due_date }
+                                      : item,
+                                  ),
+                                  true,
+                                )
+                              }
+                              onStatusChange={(status) =>
+                                mutate(
+                                  task,
+                                  { status },
+                                  moveKanbanTask(
+                                    items,
+                                    task.id,
+                                    status,
+                                    items.filter(
+                                      (item) => item.status === status,
+                                    ).length,
+                                  ),
+                                )
+                              }
+                              onDelete={() => mutate(task)}
+                              onMeeting={onMeeting}
+                              onAssignee={onAssignee}
+                            />
+                          ))}
+                          {provided.placeholder}
+                          {!column.length && (
+                            <div
+                              className={`rounded-xl border border-dotted px-4 py-8 text-center text-xs ${state.isDraggingOver ? "border-indigo-400 bg-indigo-200/30 text-indigo-600" : "border-slate-300 text-slate-400"}`}
+                            >
+                              {state.isDraggingOver
+                                ? "Drop task here"
+                                : "No tasks here"}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Droppable>
+                  </motion.section>
+                );
+              })}
+            </AnimatePresence>
           </div>
         </DragDropContext>
       )}
