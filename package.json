@@ -16,7 +16,7 @@
     "build:next": "NATIVE_NEXT=1 next build --webpack",
     "start:next": "NATIVE_NEXT=1 next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/integrity.test.ts tests/productivity.test.ts tests/calendar.test.ts tests/workspace.test.ts tests/meet-sync-client.test.ts tests/task-overdue.test.ts tests/kanban.test.ts tests/google-oauth.test.ts tests/delight.test.ts tests/digest-export.test.ts tests/transcript-evidence.test.ts && node tests/sql-security.mjs && python3 tests/persistence.py"
+    "test": "node --experimental-strip-types --test tests/integrity.test.ts tests/productivity.test.ts tests/calendar.test.ts tests/workspace.test.ts tests/meet-sync-client.test.ts tests/task-overdue.test.ts tests/kanban.test.ts tests/google-oauth.test.ts tests/delight.test.ts tests/digest-export.test.ts tests/transcript-evidence.test.ts tests/transcript-source.test.ts && node tests/sql-security.mjs && python3 tests/persistence.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
