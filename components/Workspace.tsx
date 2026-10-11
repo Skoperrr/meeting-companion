@@ -188,14 +188,6 @@ export default function Workspace({
                 );
               }}
             />
-            <details className="relative">
-              <summary className="cursor-pointer list-none rounded-full bg-white px-5 py-2 text-sm font-medium !text-black">
-                Profile
-              </summary>
-              <div className="absolute right-0 top-full z-40 mt-3 min-w-60 rounded-2xl border border-border-subtle bg-surface-elevated">
-                <UserMenu email={email} />
-              </div>
-            </details>
             <SoundToggle />
             <MeetSyncModal onSynced={refresh} />
           </div>
