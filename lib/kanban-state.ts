@@ -46,7 +46,7 @@ export function reconcileKanbanTasks(
   return [...retained, ...byId.values()];
 }
 export type BoardPatch = Partial<
-  Pick<Task, "status" | "assigned_to" | "assigned_email">
+  Pick<Task, "status" | "assigned_to" | "assigned_email" | "due_date">
 >;
 export function moveGroupedTask(
   tasks: Task[],
@@ -69,7 +69,12 @@ export function moveGroupedTask(
   const moved =
     key === "status"
       ? { ...task, status: value as Task["status"] }
-      : { ...task, assigned_to: value, assigned_email: task.assigned_to === value ? task.assigned_email : null };
+      : {
+          ...task,
+          assigned_to: value,
+          assigned_email:
+            task.assigned_to === value ? task.assigned_email : null,
+        };
   return [...remaining.slice(0, at), moved, ...remaining.slice(at)];
 }
 export function reconcileBoardTasks(

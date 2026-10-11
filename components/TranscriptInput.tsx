@@ -1,4 +1,5 @@
 "use client";
+import { useDraftRecovery } from "@/hooks/useDraftRecovery";
 import { useState, useRef } from "react";
 import { FileText, Upload, FlaskConical, Sparkles } from "lucide-react";
 import { sampleTranscript } from "@/lib/sample";
@@ -6,10 +7,12 @@ import DuplicateMeetingModal from "./DuplicateMeetingModal";
 import { ingestionSchema, type DuplicateMatch } from "@/lib/schemas";
 import type { Meeting } from "@/lib/schemas";
 export default function TranscriptInput({
+  draftKey,
   configured,
   onProcessed,
   onCancel,
 }: {
+  draftKey: string;
   configured: boolean;
   onProcessed: (m: Meeting) => void;
   onCancel: () => void;
@@ -20,6 +23,15 @@ export default function TranscriptInput({
   const [demo, setDemo] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const draft = useDraftRecovery(
+    `meeting-companion:draft:${draftKey}`,
+    { title, transcript, date },
+    (saved) => {
+      setTitle(saved.title);
+      setTranscript(saved.transcript);
+      setDate(saved.date);
+    },
+  );
   const requestId = useRef(crypto.randomUUID());
   const flight = useRef(false);
   const [phase, setPhase] = useState<"checking" | "processing">("checking");
@@ -43,6 +55,7 @@ export default function TranscriptInput({
       return;
     }
     if (!response.ok) throw new Error(data.error ?? "Processing failed.");
+    draft.clear();
     onProcessed(data);
   }
   async function submit(update?: {
@@ -117,6 +130,28 @@ export default function TranscriptInput({
         Give your conversation a little space. Paste your notes or bring in a
         text file. You’ll review every action before it becomes a task.
       </p>
+      {draft.restored && (
+        <div
+          role="status"
+          className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-botanical-border bg-[#edf2ec] p-4 text-sm text-botanical-sage"
+        >
+          Restored unsaved transcript draft
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              draft.clear();
+              setTitle("");
+              setTranscript("");
+              setDemo(false);
+              requestId.current = crypto.randomUUID();
+            }}
+            className="text-button"
+          >
+            Clear Draft
+          </button>
+        </div>
+      )}
       <form
         onSubmit={(event) => {
           event.preventDefault();

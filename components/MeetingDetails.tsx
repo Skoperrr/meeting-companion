@@ -1,5 +1,6 @@
 "use client";
 import type { Meeting, Task } from "@/lib/schemas";
+import TranscriptViewer from "./TranscriptViewer";
 import MeetingExportMenu from "./MeetingExportMenu";
 import MeetingDeleteButton from "./MeetingDeleteButton";
 import TaskBoard from "./TaskBoard";
@@ -52,9 +53,9 @@ export default function MeetingDetails({
             </div>
           ))}
         </div>
-        <details>
+        <details open>
           <summary>Read original transcript</summary>
-          <pre className="transcript-source">{meeting.transcript}</pre>
+          <TranscriptViewer transcript={meeting.transcript} />
         </details>
       </div>
       <div className="linked-tasks">

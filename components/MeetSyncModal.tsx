@@ -214,7 +214,7 @@ export default function MeetSyncModal({ onSynced }: Props) {
                 maxLength={1024}
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="https://meet.google.com/abc-defg-hij"
+                placeholder="meet.google.com/abc-defg-hij (https:// added automatically)"
                 aria-describedby={`${id}-hint${error ? ` ${id}-error` : ""}`}
                 aria-invalid={Boolean(error)}
                 className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-amber-300/60 focus:ring-2 focus:ring-amber-300/10 disabled:opacity-60"

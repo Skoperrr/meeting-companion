@@ -1,5 +1,6 @@
 "use client";
 
+import BatchActionBar from "./BatchActionBar";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import TypewriterSummary from "./TypewriterSummary";
 import { Check, CheckCheck, FileText, Quote, RotateCcw, X } from "lucide-react";
@@ -42,6 +43,7 @@ function ReviewStage({ meeting, onSaved }: Props) {
       approved: true,
     })),
   );
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -360,6 +362,22 @@ function ReviewStage({ meeting, onSaved }: Props) {
                       onFocusCapture={() => selectEvidence(index)}
                       className={`review-arrival min-w-0 rounded-xl border bg-[#fbfaf7] p-4 shadow-sm ${activeIndex === index ? "border-[#537d9f] ring-2 ring-[#537d9f]/20" : "border-[#ded8cd]"}`}
                     >
+                      <label className="mb-3 flex items-center gap-2 text-xs text-botanical-muted">
+                        <input
+                          type="checkbox"
+                          disabled={busy}
+                          checked={selected.has(index)}
+                          onChange={(e) =>
+                            setSelected((current) => {
+                              const next = new Set(current);
+                              if (e.target.checked) next.add(index);
+                              else next.delete(index);
+                              return next;
+                            })
+                          }
+                        />
+                        Select for batch actions
+                      </label>
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <label className="flex !items-center gap-2 !text-sm !font-semibold !text-[#22374e]">
                           <input
@@ -514,6 +532,38 @@ function ReviewStage({ meeting, onSaved }: Props) {
               : `Commit Approved Tasks (${approved.length})`}
           </button>
         </div>
+        <BatchActionBar
+          count={rows.filter((row) => selected.has(row.proposal_index)).length}
+          assignees={rows.map((row) => row.assigned_to)}
+          disabled={busy}
+          onClear={() => setSelected(new Set())}
+          onApprove={() => {
+            setRows((current) =>
+              current.map((row) =>
+                selected.has(row.proposal_index)
+                  ? { ...row, approved: true }
+                  : row,
+              ),
+            );
+            setSelected(new Set());
+          }}
+          onAssign={(name) => {
+            setRows((current) =>
+              current.map((row) =>
+                selected.has(row.proposal_index)
+                  ? { ...row, assigned_to: name, assigned_email: null }
+                  : row,
+              ),
+            );
+            setSelected(new Set());
+          }}
+          onDelete={() => {
+            setRows((current) =>
+              current.filter((row) => !selected.has(row.proposal_index)),
+            );
+            setSelected(new Set());
+          }}
+        />
       </form>
     </section>
   );
