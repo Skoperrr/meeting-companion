@@ -1,20 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {
-  AlertCircle,
-  CalendarDays,
-  Link2,
-  Quote,
-  Trash2,
-  UserRound,
-} from "lucide-react";
+import { AlertCircle, Link2, Quote, Trash2, UserRound } from "lucide-react";
 import { statuses, type Task } from "@/lib/schemas";
 import { isTaskOverdue } from "@/lib/task-overdue";
+import SmartDateBadge from "./SmartDateBadge";
 import TaskCalendarButton from "./TaskCalendarButton";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 type Props = {
   task: Task;
   saving: boolean;
+  onDueChange: (value: string) => Promise<void>;
   onStatusChange: (status: Task["status"]) => Promise<void>;
   onDelete: () => Promise<void>;
   onMeeting: (id: string) => void;
@@ -23,6 +18,7 @@ type Props = {
 export default function TaskCard({
   task,
   saving,
+  onDueChange,
   onStatusChange,
   onDelete,
   onMeeting,
@@ -87,21 +83,26 @@ export default function TaskCard({
           <UserRound size={14} />
           {task.assigned_to}
         </span>
-        <span
-          className={
-            overdue ? "rounded-md bg-red-100 px-2 py-1 text-red-700" : ""
-          }
-          title={overdue ? "Overdue" : "Deadline"}
-        >
-          {overdue ? <AlertCircle size={14} /> : <CalendarDays size={14} />}
-          <span className={overdue ? "text-red-700" : ""}>{task.due_date}</span>
-          {overdue && <span className="sr-only"> — overdue</span>}
-        </span>
+        <SmartDateBadge
+          value={task.due_date}
+          referenceDate={task.meeting_date}
+          disabled={saving || deleting}
+          onChange={onDueChange}
+        />
+        {overdue && (
+          <span className="text-red-700">
+            <AlertCircle size={14} />
+            <span className="sr-only">Overdue</span>
+          </span>
+        )}
       </div>
       <button
         type="button"
         className="source-link"
-        onClick={() => onMeeting(task.meeting_id)}
+        onClick={() => {
+          window.location.hash = `quote=${encodeURIComponent(task.transcript_quote)}`;
+          onMeeting(task.meeting_id);
+        }}
       >
         <Link2 size={14} />
         {task.meeting_title}

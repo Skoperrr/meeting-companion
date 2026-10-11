@@ -85,7 +85,12 @@ export default function KanbanBoard({
       toast.warning("Changes saved. Reload to refresh dashboard metrics.");
     }
   }
-  async function mutate(task: Task, patch?: BoardPatch, nextItems?: Task[]) {
+  async function mutate(
+    task: Task,
+    patch?: BoardPatch,
+    nextItems?: Task[],
+    throwOnFailure = false,
+  ) {
     if (lock.current) return;
     lock.current = true;
     setPending(true);
@@ -109,6 +114,9 @@ export default function KanbanBoard({
             ? {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                  ...(patch.due_date !== undefined
+                    ? { due_date: patch.due_date }
+                    : {}),
                   ...(patch.status !== undefined
                     ? { status: patch.status }
                     : {}),
@@ -149,6 +157,8 @@ export default function KanbanBoard({
       setPending(false);
     }
     if (saved) await refresh();
+    else if (throwOnFailure)
+      throw new Error("Deadline was not saved. Try again.");
   }
   function drop(result: DropResult) {
     if (lock.current || !result.destination || result.reason === "CANCEL")
@@ -285,6 +295,18 @@ export default function KanbanBoard({
                             task={task}
                             index={index}
                             disabled={pending}
+                            onDueChange={(due_date) =>
+                              mutate(
+                                task,
+                                { due_date },
+                                items.map((item) =>
+                                  item.id === task.id
+                                    ? { ...item, due_date }
+                                    : item,
+                                ),
+                                true,
+                              )
+                            }
                             onStatusChange={(status) =>
                               mutate(
                                 task,

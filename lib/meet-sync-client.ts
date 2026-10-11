@@ -20,7 +20,10 @@ const packetSchema = z.discriminatedUnion("type", [
 export function parseMeetSyncInput(
   value: string,
 ): { meetUrl: string } | { calendarEventId: string } {
-  const input = value.trim();
+  const trimmed = value.trim();
+  const input = /^meet\.google\.com\//i.test(trimmed)
+    ? `https://${trimmed}`
+    : trimmed;
   if (!input || input.length > 1024)
     throw new Error("Enter a Calendar event ID or Google Meet URL.");
   if (/^https?:\/\//i.test(input)) {

@@ -351,6 +351,7 @@ export default function Workspace({
               )}
               {view === "new" && (
                 <TranscriptInput
+                  draftKey={email}
                   configured={data.ai_configured}
                   onCancel={() => navigate("overview")}
                   onProcessed={(m) => {

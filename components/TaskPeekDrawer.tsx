@@ -107,6 +107,7 @@ export default function TaskPeekDrawer({
         <button
           type="button"
           onClick={() => {
+            window.location.hash = `quote=${encodeURIComponent(task.transcript_quote)}`;
             onClose();
             onMeeting(task.meeting_id);
           }}

@@ -1,5 +1,5 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import KanbanBoard from "./KanbanBoard";
 import { statuses, type Task } from "@/lib/schemas";
@@ -13,18 +13,53 @@ export default function TaskBoard({
   onUpdated: () => Promise<void>;
   onMeeting: (id: string) => void;
 }) {
-  const assigneeParam = useSearchParams().get("assignee") ?? "";
-  const [querySource, setQuerySource] = useState(assigneeParam);
-  const [filters, setFilters] = useState<TaskFilters>({
-    assignee: assigneeParam,
-    priority: "",
-    status: "",
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const query = params.toString();
+  const read = () => ({
+    assignee: params.get("assignee") ?? "",
+    priority: (["High", "Med", "Low"].includes(params.get("priority") ?? "")
+      ? params.get("priority")
+      : "") as TaskFilters["priority"],
+    status: (statuses.includes(params.get("status") as Task["status"])
+      ? params.get("status")
+      : "") as TaskFilters["status"],
+    search: params.get("q") ?? "",
   });
-  if (querySource !== assigneeParam) {
-    setQuerySource(assigneeParam);
-    setFilters({ assignee: assigneeParam, priority: "", status: "" });
+  const [source, setSource] = useState(query);
+  const [filters, setLocalFilters] = useState(read);
+  if (source !== query) {
+    setSource(query);
+    setLocalFilters(read());
   }
-  const visible = filterTasks(tasks, filters);
+  function setFilters(
+    next: typeof filters | ((current: typeof filters) => typeof filters),
+  ) {
+    const value = typeof next === "function" ? next(filters) : next;
+    setLocalFilters(value);
+    const updated = new URLSearchParams(params.toString());
+    for (const [key, text] of Object.entries({
+      assignee: value.assignee,
+      priority: value.priority,
+      status: value.status,
+      q: value.search,
+    })) {
+      if (text) updated.set(key, text);
+      else updated.delete(key);
+    }
+    router.replace(
+      `${pathname}${updated.size ? "?" + updated.toString() : ""}`,
+      { scroll: false },
+    );
+  }
+  const visible = filterTasks(tasks, filters).filter(
+    (task) =>
+      !filters.search ||
+      [task.title, task.description, task.assigned_to].some((text) =>
+        text.toLowerCase().includes(filters.search.toLowerCase()),
+      ),
+  );
   const assignees = [...new Set(tasks.map((t) => t.assigned_to))].sort((a, b) =>
     a.localeCompare(b),
   );
@@ -95,10 +130,24 @@ export default function TaskBoard({
             ))}
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-xs text-botanical-muted">
+          Search tasks
+          <input
+            type="search"
+            value={filters.search}
+            onChange={(e) =>
+              setFilters((current) => ({ ...current, search: e.target.value }))
+            }
+            placeholder="Find a commitment…"
+            className="rounded-full border border-botanical-border p-2 text-sm"
+          />
+        </label>
         <button
           type="button"
           className="secondary"
-          onClick={() => setFilters({ assignee: "", priority: "", status: "" })}
+          onClick={() =>
+            setFilters({ assignee: "", priority: "", status: "", search: "" })
+          }
         >
           Clear filters
         </button>

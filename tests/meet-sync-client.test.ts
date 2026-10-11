@@ -12,6 +12,9 @@ test("meeting inputs distinguish exact Meet URLs from Calendar IDs", () => {
   assert.deepEqual(parseMeetSyncInput("https://meet.google.com/abc-defg-hij"), {
     meetUrl: "https://meet.google.com/abc-defg-hij",
   });
+  assert.deepEqual(parseMeetSyncInput("meet.google.com/abc-defg-hij"), {
+    meetUrl: "https://meet.google.com/abc-defg-hij",
+  });
   for (const value of [
     "",
     "https://evil.example.com/abc-defg-hij",

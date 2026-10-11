@@ -10,6 +10,7 @@ export default function KanbanCard({
   task,
   index,
   disabled,
+  onDueChange,
   onStatusChange,
   onDelete,
   onMeeting,
@@ -18,6 +19,7 @@ export default function KanbanCard({
   task: Task;
   index: number;
   disabled: boolean;
+  onDueChange: (value: string) => Promise<void>;
   onStatusChange: (status: Task["status"]) => Promise<void>;
   onDelete: () => Promise<void>;
   onMeeting: (id: string) => void;
@@ -103,6 +105,7 @@ export default function KanbanCard({
               <TaskCard
                 task={task}
                 saving={disabled}
+                onDueChange={onDueChange}
                 onStatusChange={onStatusChange}
                 onDelete={onDelete}
                 onMeeting={onMeeting}

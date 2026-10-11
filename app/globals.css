@@ -1176,3 +1176,8 @@ button:focus-visible,a:focus-visible { outline-color:var(--sage); }
 .reflection-canvas textarea.botanical-transcript,.reflection-canvas input:not([type=checkbox]):not([type=file]) { border-radius:16px; }
 .column-heading h3 { font-weight:500; letter-spacing:.015em; }
 .marker-0 { background:#b7b5a8; } .marker-1 { background:#91a98a; } .marker-2 { background:#c27d56; } .marker-3 { background:#c2a36a; } .marker-4 { background:#3e5945; }
+
+@keyframes quote-pulse { 0%,100% { box-shadow:0 0 0 0 rgba(94,113,93,0); } 45% { box-shadow:0 0 0 6px rgba(94,113,93,.2); } }
+.quote-jump { animation:quote-pulse 1.2s ease-out 2; }
+.batch-dock { animation:review-arrival .25s ease-out both; }
+@media(prefers-reduced-motion:reduce) { .quote-jump,.batch-dock { animation:none; } }
