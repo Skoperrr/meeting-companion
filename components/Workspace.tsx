@@ -1,4 +1,10 @@
 "use client";
+import VirtualTaskList from "./VirtualTaskList";
+import {
+  prefetchMeeting,
+  clearMeetingCache,
+  cachedMeeting,
+} from "@/lib/prefetch";
 import Navbar from "./Navbar";
 import { useState, useCallback } from "react";
 import {
@@ -51,6 +57,7 @@ export default function Workspace({
         throw new Error("Please sign in to continue.");
       }
       if (!r.ok) throw new Error(d.error);
+      clearMeetingCache();
       setData(d);
       setError("");
     } catch (e) {
@@ -74,7 +81,11 @@ export default function Workspace({
     setNavOpen(false);
   }
   function openMeeting(id: string) {
-    const m = data.meetings.find((m) => m.id === id);
+    void prefetchMeeting(id, router.prefetch);
+    const local = data.meetings.find((m) => m.id === id);
+    const cached = cachedMeeting(id);
+    const m =
+      cached && (!local || cached.version >= local.version) ? cached : local;
     if (m) {
       setSelected(m);
       navigate(m.review_state === "pending" ? "review" : "meeting");
@@ -390,9 +401,22 @@ export default function Workspace({
                       <Plus size={18} /> New meeting
                     </button>
                   </div>
-                  <div className="history-grid">
-                    {data.meetings.map((m) => (
-                      <article className="panel history-card" key={m.id}>
+                  <VirtualTaskList
+                    items={data.meetings}
+                    getKey={(m) => m.id}
+                    label="Meeting history"
+                    estimate={290}
+                    renderItem={(m) => (
+                      <article
+                        className="panel history-card"
+                        key={m.id}
+                        onMouseEnter={() =>
+                          void prefetchMeeting(m.id, router.prefetch)
+                        }
+                        onFocusCapture={() =>
+                          void prefetchMeeting(m.id, router.prefetch)
+                        }
+                      >
                         <button
                           className="w-full text-left"
                           onClick={() => openMeeting(m.id)}
@@ -436,8 +460,8 @@ export default function Workspace({
                           />
                         </div>
                       </article>
-                    ))}
-                  </div>
+                    )}
+                  />
                   {!data.meetings.length && (
                     <div className="panel empty">
                       No meetings yet. Add a transcript to start your history.

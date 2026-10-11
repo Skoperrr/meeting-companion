@@ -1,4 +1,5 @@
 "use client";
+import { AnimatePresence } from "framer-motion";
 import { Draggable } from "@hello-pangea/dnd";
 import { GripVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -102,15 +103,19 @@ export default function KanbanCard({
                   : ""
               }
             >
-              <TaskCard
-                task={task}
-                saving={disabled}
-                onDueChange={onDueChange}
-                onStatusChange={onStatusChange}
-                onDelete={onDelete}
-                onMeeting={onMeeting}
-                onEvidence={() => setEvidence(true)}
-              />
+              <AnimatePresence initial={false}>
+                <TaskCard
+                  key={task.id}
+                  isDragging={snapshot.isDragging}
+                  task={task}
+                  saving={disabled}
+                  onDueChange={onDueChange}
+                  onStatusChange={onStatusChange}
+                  onDelete={onDelete}
+                  onMeeting={onMeeting}
+                  onEvidence={() => setEvidence(true)}
+                />
+              </AnimatePresence>
             </div>
           </div>
           {evidence && (
