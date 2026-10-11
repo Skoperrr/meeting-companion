@@ -38,7 +38,7 @@ export default function GoogleSignInButton({
         type="button"
         onClick={signIn}
         disabled={busy}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+        className="botanical-primary w-full"
       >
         <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
           <path
@@ -58,7 +58,7 @@ export default function GoogleSignInButton({
             d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
           />
         </svg>
-        {busy ? "Opening Google…" : "Continue with Google"}
+        {busy ? "Opening Google…" : "Sign in with Google"}
       </button>
       {error && (
         <p role="alert" className="mt-3 text-sm text-red-700">

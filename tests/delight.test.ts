@@ -15,7 +15,7 @@ test("avatars are deterministic across case and whitespace, with safe fallback i
     assigneeAppearance("Kopano").background,
   );
 });
-test("gradient endpoints exceed normal-text contrast with white across the hue range", () => {
+test("pastel gradient endpoints exceed normal-text contrast with forest initials", () => {
   const luminance = (h: number, s: number, l: number) => {
     const a = s * Math.min(l, 1 - l);
     const f = (n: number) => {
@@ -28,10 +28,10 @@ test("gradient endpoints exceed normal-text contrast with white across the hue r
   };
   for (let h = 0; h < 360; h++)
     for (const [s, l] of [
-      [0.58, 0.24],
-      [0.62, 0.26],
+      [0.22, 0.84],
+      [0.28, 0.78],
     ])
-      assert.ok(1.05 / (luminance(h, s, l) + 0.05) >= 4.5);
+      assert.ok((luminance(h, s, l) + 0.05) / 0.067 >= 4.5);
 });
 test("audio helpers are silent and safe during SSR", () => {
   assert.equal(soundEnabled(), false);

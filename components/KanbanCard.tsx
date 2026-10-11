@@ -75,7 +75,7 @@ export default function KanbanCard({
           style={provided.draggableProps.style}
         >
           <div
-            className={`rounded-xl border bg-white transition-shadow duration-200 ${snapshot.isDragging ? "border-indigo-400 shadow-2xl ring-2 ring-indigo-300/50" : "border-transparent"}`}
+            className={`rounded-2xl border bg-botanical-paper transition-shadow duration-300 ${snapshot.isDragging ? "border-indigo-400 shadow-2xl ring-2 ring-indigo-300/50" : "border-transparent"}`}
           >
             <div className="flex items-center justify-between px-4 pt-3">
               <AssigneeAvatar
