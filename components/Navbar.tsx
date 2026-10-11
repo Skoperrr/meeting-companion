@@ -1,5 +1,5 @@
 import Link from "next/link";
-import StrideShiftLogo from "./StrideShiftLogo";
+import { AudioLines } from "lucide-react";
 import type { ReactNode } from "react";
 export default function Navbar({
   children,
@@ -14,7 +14,13 @@ export default function Navbar({
     >
       {variant === "public" && (
         <Link href="/" className="botanical-wordmark">
-          <StrideShiftLogo />
+          <span className="brand-seed">
+            <AudioLines size={20} strokeWidth={1.4} />
+          </span>
+          <span>
+            meeting companion
+            <span className="brand-caption">clarity / accountability</span>
+          </span>
         </Link>
       )}
       {children}

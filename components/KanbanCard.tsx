@@ -2,7 +2,7 @@
 import { fluidEase } from "@/lib/motion";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Draggable } from "@hello-pangea/dnd";
-import { ChevronDown, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Task } from "@/lib/schemas";
 import AssigneeAvatar from "./AssigneeAvatar";
@@ -81,7 +81,7 @@ export default function KanbanCard({
           style={provided.draggableProps.style}
         >
           <div
-            className={`commitment-card rounded-2xl border bg-surface-base transition-shadow duration-300 ${snapshot.isDragging ? "is-dragging border-white/20 bg-surface-elevated shadow-2xl" : "border-white/[.08]"}`}
+            className={`rounded-2xl border bg-botanical-paper transition-shadow duration-300 ${snapshot.isDragging ? "border-indigo-400 shadow-2xl ring-2 ring-indigo-300/50" : "border-transparent"}`}
           >
             <div className="flex items-center justify-between px-4 pt-3">
               <AssigneeAvatar
@@ -99,7 +99,13 @@ export default function KanbanCard({
                 <GripVertical size={18} />
               </button>
             </div>
-            <div className={snapshot.isDragging ? "relative z-10" : ""}>
+            <div
+              className={
+                snapshot.isDragging
+                  ? "relative z-10 scale-105 motion-reduce:scale-100"
+                  : ""
+              }
+            >
               <AnimatePresence initial={false}>
                 <TaskCard
                   key={task.id}
@@ -117,13 +123,9 @@ export default function KanbanCard({
                 type="button"
                 aria-expanded={quoteOpen}
                 onClick={() => setQuoteOpen((current) => !current)}
-                className="flex w-full items-center justify-between border-t border-white/[.08] px-5 py-3 text-left text-xs text-text-secondary"
+                className="w-full border-t border-white/[.08] px-5 py-3 text-left text-xs text-text-secondary"
               >
-                Verbatim Quote{" "}
-                <ChevronDown
-                  size={14}
-                  className={`transition-transform duration-500 ${quoteOpen ? "rotate-180" : ""}`}
-                />
+                {quoteOpen ? "−" : "+"} Verbatim evidence
               </button>
               <AnimatePresence initial={false}>
                 {quoteOpen && (

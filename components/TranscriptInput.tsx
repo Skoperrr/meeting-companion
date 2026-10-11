@@ -121,7 +121,6 @@ export default function TranscriptInput({
   return (
     <section className="grid items-start gap-6 lg:grid-cols-[minmax(240px,.75fr)_minmax(0,2fr)]">
       <MeetingSyncCard
-        characters={transcript.length}
         title={title}
         date={date}
         phase={
