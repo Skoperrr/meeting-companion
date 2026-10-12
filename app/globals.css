@@ -1443,3 +1443,8 @@ dialog { background:#13151b; color:#fff; border-color:rgba(59,130,246,.3); color
  .landing-navigation .navigation-actions > div { width:100%; }
 }
 @media(prefers-reduced-motion:reduce) { .nav-section-link { transition:none; } }
+
+/* Dedicated review lane keeps review work distinct from active work. */
+.status-column-in-review .status-marker { background: #a5b4fc; }
+.status-column-completed .status-marker { background: #10b981; }
+.status-column-in-review .column-heading > span:last-child { background: rgba(99,102,241,.1); color: #c7d2fe; border-color: rgba(99,102,241,.3); }
