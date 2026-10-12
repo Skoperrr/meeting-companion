@@ -40,6 +40,28 @@ export default function MeetSyncModal({ onSynced }: Props) {
     stage === "fetching" || stage === "analyzing" || stage === "dispatching";
   const locked = busy || stage === "success";
   useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("meeting-companion:processing", {
+        detail: !open ? null : error
+          ? "error"
+          : stage === "success"
+            ? "review"
+            : stage === "idle"
+              ? null
+              : stage,
+      }),
+    );
+  }, [stage, error, open]);
+  useEffect(
+    () => () => {
+      window.dispatchEvent(
+        new CustomEvent("meeting-companion:processing", { detail: null }),
+      );
+    },
+    [],
+  );
+
+  useEffect(() => {
     if (!open) return;
     const element = dialog.current;
     element?.showModal();
