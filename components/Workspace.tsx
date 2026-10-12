@@ -8,11 +8,8 @@ import {
 import DashboardHeader from "./DashboardHeader";
 import DashboardOverview from "./DashboardOverview";
 import MeetingSyncCard from "./MeetingSyncCard";
-import CommitmentBoard from "./TaskBoard";
 import { useState, useCallback } from "react";
 import {
-  AudioLines,
-  LayoutDashboard,
   Columns3,
   FileText,
   Plus,
@@ -20,8 +17,6 @@ import {
   CheckCheck,
   Clock3,
   AlertCircle,
-  Menu,
-  X,
 } from "lucide-react";
 import CommandPalette from "./CommandPalette";
 import SoundToggle from "./SoundToggle";
@@ -31,7 +26,6 @@ import TaskReviewList from "@/components/TaskReviewList";
 import TaskBoard from "@/components/TaskBoard";
 import type { Snapshot, Meeting } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
-import UserMenu from "./UserMenu";
 import MeetingDetails from "./MeetingDetails";
 import MeetingDeleteButton from "./MeetingDeleteButton";
 type View = "overview" | "board" | "history" | "new" | "review" | "meeting";
@@ -50,8 +44,6 @@ export default function Workspace({
   const [selected, setSelected] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [navOpen, setNavOpen] = useState(false);
-  const [hoverScale, setHoverScale] = useState(true);
   const refresh = useCallback(async () => {
     try {
       const r = await fetch("/api/meetings", { cache: "no-store" });
@@ -82,7 +74,6 @@ export default function Workspace({
             : null;
     if (route) router.push(route);
     setView(v);
-    setNavOpen(false);
   }
   function openMeeting(id: string) {
     void prefetchMeeting(id, router.prefetch);
@@ -106,63 +97,20 @@ export default function Workspace({
   ).length;
   const blocked = data.tasks.filter((t) => t.status === "Blocked").length;
   return (
-    <div
-      className={`app-shell luxury-workspace ${hoverScale ? "enable-hover-scale" : ""}`}
-    >
-      <aside className={`sidebar ${navOpen ? "open" : ""}`}>
-        <div className="brand">
-          <span className="brand-icon">
-            <AudioLines size={24} />
-          </span>
-          <div>
-            StrideShift<span>MEETING COMPANION</span>
-          </div>
-        </div>
-        <div className="workspace-label">D-LAB WORKSPACE</div>
-        <nav>
-          {(
-            [
-              ["overview", LayoutDashboard, "Overview"],
-              ["board", Columns3, "Action board"],
-              ["history", FileText, "Meeting history"],
-            ] as const
-          ).map(([v, Icon, label]) => (
-            <button
-              key={v}
-              className={view === v ? "active" : ""}
-              onClick={() => navigate(v)}
-            >
-              <Icon size={19} />
-              {label}
-              {v === "history" && <span>{data.meetings.length}</span>}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-note">
-          <div className="mini-rule" />
-          <span className="eyebrow">FROM WORDS TO WORK</span>
-          <p>
-            A conversation.
-            <br />A clear next step.
-          </p>
-        </div>
-        <UserMenu email={email} />
-      </aside>
+    <div className="app-shell luxury-workspace streamlined-workspace">
       <div className="main-shell">
-        <DashboardHeader completed={completed} total={data.tasks.length}>
-          <button
-            className="mobile-toggle icon-button"
-            aria-label="Toggle navigation"
-            onClick={() => setNavOpen(!navOpen)}
-          >
-            {navOpen ? <X /> : <Menu />}
-          </button>
+        <DashboardHeader
+          completed={completed}
+          total={data.tasks.length}
+          email={email}
+        >
           <div className="luxury-nav-tabs">
             <button
               className={
                 view === "overview" ? "luxury-nav-active" : "luxury-filter"
               }
               onClick={() => navigate("overview")}
+              aria-current={view === "overview" ? "page" : undefined}
             >
               Dashboard
             </button>
@@ -171,6 +119,7 @@ export default function Workspace({
                 view === "history" ? "luxury-nav-active" : "luxury-filter"
               }
               onClick={() => navigate("history")}
+              aria-current={view === "history" ? "page" : undefined}
             >
               Meetings
             </button>
@@ -179,25 +128,10 @@ export default function Workspace({
                 view === "board" ? "luxury-nav-active" : "luxury-filter"
               }
               onClick={() => navigate("board")}
+              aria-current={view === "board" ? "page" : undefined}
             >
               Tracker
             </button>
-          </div>
-          <div className="sr-only">
-            <span className="topbar-project">Workspace</span>
-            <span className="divider">/</span>
-            <span>
-              {
-                {
-                  overview: "Overview",
-                  board: "Action board",
-                  history: "Meeting history",
-                  new: "New meeting",
-                  review: "Review actions",
-                  meeting: "Meeting details",
-                }[view]
-              }
-            </span>
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <CommandPalette
@@ -212,7 +146,6 @@ export default function Workspace({
               }
               onAssignee={(name) => {
                 setView("board");
-                setNavOpen(false);
                 router.push(
                   name
                     ? `/tracker?assignee=${encodeURIComponent(name)}`
@@ -222,13 +155,9 @@ export default function Workspace({
             />
             <SoundToggle />
             <MeetSyncModal onSynced={refresh} />
-            <span className="luxury-user-capsule" title={email}>
-              <span aria-hidden="true">{email.slice(0, 1).toUpperCase()}</span>
-              <span>{email.split("@")[0]}</span>
-            </span>
           </div>
         </DashboardHeader>
-        <main>
+        <main id="main-content" tabIndex={-1} className="streamlined-main">
           {error && (
             <div className="error" role="alert">
               {error}{" "}
@@ -245,203 +174,66 @@ export default function Workspace({
           ) : (
             <>
               {view === "overview" && (
-                <>
+                <div className="dashboard-stack">
                   <DashboardOverview
                     completed={completed}
                     total={data.tasks.length}
-                    hoverScale={hoverScale}
-                    onHoverScale={() => setHoverScale((current) => !current)}
-                    onPriority={() => {
-                      setView("board");
-                      router.push("/tracker?priority=High");
-                    }}
-                    onDue={() => {
-                      setView("board");
-                      router.push("/tracker?due=week");
-                    }}
+                    onCapture={() => navigate("new")}
                   />
-                  <div className="luxury-dashboard-grid">
-                    <div className="min-w-0">
-                      <MeetingSyncCard
-                        title={data.meetings[0]?.title ?? ""}
-                        date={data.meetings[0]?.meeting_date ?? ""}
-                        phase={data.meetings.length ? "success" : "idle"}
-                        characters={data.meetings[0]?.transcript.length ?? 0}
-                        decisions={
-                          data.meetings[0]?.analysis.decisions.length ?? 0
-                        }
-                        tasks={
-                          data.meetings[0]?.analysis.proposed_tasks.length ?? 0
-                        }
-                        onProcess={() =>
-                          data.meetings[0]
-                            ? openMeeting(data.meetings[0].id)
-                            : navigate("new")
-                        }
-                      />
-                      <button
-                        className="primary w-full"
-                        onClick={() => navigate("new")}
-                      >
-                        <Plus size={16} /> Capture a meeting
-                      </button>
-                    </div>
-                    <section
-                      className="luxury-commitments min-w-0"
-                      aria-label="Commitment tracking"
+                  <MeetingSyncCard
+                    title={data.meetings[0]?.title ?? ""}
+                    date={data.meetings[0]?.meeting_date ?? ""}
+                    phase={data.meetings.length ? "success" : "idle"}
+                    characters={data.meetings[0]?.transcript.length ?? 0}
+                    decisions={data.meetings[0]?.analysis.decisions.length ?? 0}
+                    tasks={
+                      data.meetings[0]?.analysis.proposed_tasks.length ?? 0
+                    }
+                    onProcess={
+                      data.meetings[0]
+                        ? () => openMeeting(data.meetings[0].id)
+                        : undefined
+                    }
+                  />
+                  <section
+                    aria-labelledby="workspace-overview-heading"
+                    className="workspace-overview"
+                  >
+                    <h2
+                      id="workspace-overview-heading"
+                      className="font-serif text-2xl sm:text-3xl lg:text-4xl tracking-tight text-white"
                     >
-                      <CommitmentBoard
-                        tasks={data.tasks}
-                        onUpdated={refresh}
-                        onMeeting={openMeeting}
-                      />
-                    </section>
-                  </div>
-                  <div className="page-heading luxury-secondary-heading">
-                    <div>
-                      <span className="eyebrow">
-                        YOUR MEETINGS, MOVING FORWARD
-                      </span>
-                      <h1>Your workspace at a glance.</h1>
-                      <p className="muted">
-                        Capture the discussion. Review the actions. Keep the
-                        work moving.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <button
-                        className="primary"
-                        onClick={() => navigate("new")}
-                      >
-                        <Plus size={18} /> New meeting
-                      </button>
-                    </div>
-                  </div>
-                  <div className="metrics">
-                    {[
-                      ["Meetings", data.meetings.length, FileText],
-                      ["Action items", data.tasks.length, Columns3],
-                      ["Pending approval", pendingCount, Clock3],
-                      ["Active", active, ArrowUpRight],
-                      ["Completed", completed, CheckCheck],
-                      ["Blocked", blocked, AlertCircle],
-                    ].map(([label, value, Icon]) => {
-                      const I = Icon as typeof FileText;
-                      return (
-                        <div className="metric" key={String(label)}>
-                          <div>
-                            <span>{String(label)}</span>
-                            <I size={17} />
-                          </div>
-                          <strong>{String(value).padStart(2, "0")}</strong>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="overview-grid">
-                    <section className="panel meetings-panel">
-                      <div className="section-head">
-                        <h2>Recent meetings</h2>
-                        <button
-                          className="text-button"
-                          onClick={() => navigate("history")}
-                        >
-                          View all
-                        </button>
-                      </div>
-                      {data.meetings.length ? (
-                        data.meetings.slice(0, 5).map((m) => (
-                          <button
-                            className="meeting-row"
-                            key={m.id}
-                            onClick={() => openMeeting(m.id)}
-                          >
-                            <span className="meeting-icon">
-                              <FileText size={20} />
-                            </span>
-                            <div>
-                              <strong>{m.title}</strong>
-                              <small>
-                                {m.meeting_date} · {m.analysis_source}
-                              </small>
+                      Your workspace at a glance.
+                    </h2>
+                    <p className="mt-4 text-sm sm:text-base leading-7 text-text-secondary">
+                      Capture the discussion. Review the actions. Keep the work
+                      moving.
+                    </p>
+                    <div className="mt-8">
+                      <div className="metrics">
+                        {[
+                          ["Meetings", data.meetings.length, FileText],
+                          ["Action items", data.tasks.length, Columns3],
+                          ["Pending approval", pendingCount, Clock3],
+                          ["Active", active, ArrowUpRight],
+                          ["Completed", completed, CheckCheck],
+                          ["Blocked", blocked, AlertCircle],
+                        ].map(([label, value, Icon]) => {
+                          const I = Icon as typeof FileText;
+                          return (
+                            <div className="metric" key={String(label)}>
+                              <div>
+                                <span>{String(label)}</span>
+                                <I size={17} aria-hidden="true" />
+                              </div>
+                              <strong>{String(value).padStart(2, "0")}</strong>
                             </div>
-                            <span
-                              className={`badge ${m.review_state === "pending" ? "pending-badge" : "saved-badge"}`}
-                            >
-                              {m.review_state === "pending"
-                                ? "Needs review"
-                                : "Approved"}
-                            </span>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="empty">
-                          <FileText size={30} />
-                          <h3>Your next meeting starts here</h3>
-                          <p>
-                            Upload a transcript to turn commitments into
-                            trackable tasks.
-                          </p>
-                          <button
-                            className="secondary"
-                            onClick={() => navigate("new")}
-                          >
-                            Add your first meeting
-                          </button>
-                        </div>
-                      )}
-                    </section>
-                    <section className="review-callout">
-                      <span className="eyebrow">YOU HAVE THE FINAL SAY</span>
-                      <h2>
-                        AI proposes.
-                        <br />
-                        You decide.
-                      </h2>
-                      <p>
-                        Check owners, deadlines and source quotes before
-                        approving a task.
-                      </p>
-                      <div className="callout-number">
-                        {String(pendingCount).padStart(2, "0")}
-                        <span>
-                          actions awaiting
-                          <br />
-                          your review
-                        </span>
+                          );
+                        })}
                       </div>
-                      {pending.length ? (
-                        <button
-                          className="primary"
-                          onClick={() => openMeeting(pending[0].id)}
-                        >
-                          Review actions
-                        </button>
-                      ) : (
-                        <button
-                          className="secondary"
-                          onClick={() => navigate("new")}
-                        >
-                          Capture a meeting
-                        </button>
-                      )}
-                    </section>
-                  </div>
-                  <section className="pipeline-strip">
-                    <span className="eyebrow">THE WORKFLOW</span>
-                    <div>
-                      <span>
-                        <b>01</b> Capture transcript
-                      </span>
-                      <span>
-                        <b>02</b> Review & approve
-                      </span>
-                      <span>
-                        <b>03</b> Track the work
-                      </span>
                     </div>
                   </section>
-                </>
+                </div>
               )}
               {view === "new" && (
                 <TranscriptInput
@@ -480,8 +272,12 @@ export default function Workspace({
                       <h1>Meeting history</h1>
                       <p className="muted">The context stays with the work.</p>
                     </div>
-                    <button className="primary" onClick={() => navigate("new")}>
-                      <Plus size={18} /> New meeting
+                    <button
+                      className="primary"
+                      aria-label="Capture a meeting from a transcript"
+                      onClick={() => navigate("new")}
+                    >
+                      <Plus size={18} aria-hidden="true" /> Capture a Meeting
                     </button>
                   </div>
                   <VirtualTaskList

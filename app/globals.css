@@ -1391,3 +1391,28 @@ dialog { background:#13151b; color:#fff; border-color:rgba(59,130,246,.3); color
 @media(prefers-reduced-motion:reduce) {
  .performance-card,.performance-task-card { transform:none; }
 }
+
+/* Visible navigation and a single-column dashboard hierarchy. */
+.app-navigation.topbar { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:24px; padding:16px 24px; height:auto; min-height:76px; }
+.navigation-brand { display:inline-flex; align-items:center; gap:12px; min-height:44px; }
+.navigation-controls { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:16px; min-width:0; }
+.navigation-controls > div:last-child { width:auto; margin-left:0; }
+.navigation-account { display:flex; align-items:center; gap:16px; justify-self:end; min-width:0; }
+.navigation-email { display:none; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:#a1adbf; }
+.nav-sign-out-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; min-width:44px; padding:8px 16px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:#1a1d24; color:#fff; font-size:14px; }
+.nav-sign-out-button:hover { background:#25314a; border-color:rgba(59,130,246,.3); }
+.nav-skip-link:focus { position:absolute; top:16px; left:16px; z-index:100; width:auto; height:auto; padding:12px 16px; margin:0; clip:auto; clip-path:none; overflow:visible; background:#13151b; color:#fff; border:1px solid #3b82f6; border-radius:8px; white-space:normal; }
+.streamlined-workspace .streamlined-main { max-width:1280px; margin:0 auto; padding:32px 32px 64px; }
+.dashboard-stack { display:flex; flex-direction:column; gap:48px; }
+.dashboard-hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:32px; }
+.dashboard-stack > .processing-pod { width:100%; margin:0; padding:32px; }
+.dashboard-stack > .processing-pod > svg { max-height:160px; }
+.workspace-overview .metrics { margin-bottom:0; }
+.streamlined-workspace :is(button,a,summary,select,input):focus-visible { outline:2px solid #3b82f6 !important; outline-offset:3px !important; box-shadow:0 0 0 3px #090a0d !important; }
+.app-navigation :is(button,a),.dashboard-stack button { min-width:44px; min-height:44px; }
+@media(min-width:1440px) { .navigation-email { display:block; } }
+@media(max-width:1023px) { .app-navigation.topbar { grid-template-columns:minmax(0,1fr) auto; gap:16px; border-radius:24px; } .navigation-controls { grid-column:1/-1; grid-row:2; justify-content:flex-start; } .dashboard-hero { grid-template-columns:1fr; gap:32px; } .streamlined-workspace .streamlined-main { padding:32px 24px 64px; } }
+@media(max-width:639px) { .streamlined-workspace .streamlined-main { padding:32px 16px 64px; } .dashboard-stack { gap:40px; } .dashboard-stack > .processing-pod { padding:24px; } .app-navigation.topbar { padding:16px; margin:16px; gap:16px; } .navigation-controls,.luxury-nav-tabs { gap:8px; } .navigation-controls > div:last-child { width:100%; justify-content:flex-start; } .navigation-brand { gap:8px; } .navigation-brand > span:last-child { font-size:22px; } }
+.streamlined-workspace :is(button,summary,select,input:not([type=checkbox])),.botanical-navbar :is(button,a) { min-height:44px; }
+.streamlined-workspace :is(button,summary) { min-width:44px; }
+@media(max-width:380px) { .app-navigation.topbar { padding:12px; gap:12px; } .navigation-brand > span:last-child { font-size:20px; } .nav-sign-out-button { padding:8px 12px; font-size:13px; } }

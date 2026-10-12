@@ -64,7 +64,7 @@ export default async function LandingPage() {
           )}
         </div>
       </Navbar>
-      <main className="!m-0 !max-w-none !p-0">
+      <main id="main-content" tabIndex={-1} className="!m-0 !max-w-none !p-0">
         <section className="botanical-hero">
           <div className="hero-copy">
             <span className="botanical-tag">
