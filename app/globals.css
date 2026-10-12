@@ -1362,7 +1362,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex]:focus-visi
 .processing-pod svg path { stroke:revert-layer; }.processing-pod [role=status] { color:#a1adbf; border-color:rgba(59,130,246,.3); }
 dialog { background:#13151b; color:#fff; border-color:rgba(59,130,246,.3); color-scheme:dark; } dialog [cmdk-input],dialog [cmdk-item] { color:#fff !important; } dialog [cmdk-item][data-selected=true] { background:#1a1d24; }
 .luxury-workspace { background:#090a0d; }.luxury-workspace > .sidebar { display:none; }.luxury-workspace > .sidebar.open { display:flex; z-index:80; }.luxury-workspace .main-shell { margin-left:0; width:100%; }.luxury-workspace main { max-width:1920px; margin:auto; padding:32px 32px 96px; }
-.luxury-header.topbar { margin:24px; padding:12px 24px; border-radius:999px; }.luxury-header .mobile-toggle { display:inline-flex; }
+.luxury-header.topbar { margin:24px; padding:12px 24px; border-radius:999px; background:rgba(9,10,13,.8); color:#fff; border-color:rgba(255,255,255,.08); backdrop-filter:blur(24px); }.luxury-header .mobile-toggle { display:inline-flex; }
 .luxury-nav-tabs { display:flex; gap:8px; flex-wrap:wrap; }.luxury-nav-active { background:#fff; color:#090a0d; border-radius:999px; padding:8px 16px; font-size:12px; }
 .luxury-filter { background:#1a1d24; border:1px solid rgba(255,255,255,.08); color:#cbd5e1; border-radius:999px; padding:8px 12px; font-size:12px; }
 .luxury-overview { display:grid; grid-template-columns:1fr 1.2fr; gap:48px; align-items:center; padding:32px 0 48px; }.luxury-ring { stroke:#3b82f6; filter:drop-shadow(0 0 4px rgba(59,130,246,.3)); }
