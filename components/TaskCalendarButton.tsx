@@ -5,9 +5,11 @@ import { taskCalendarEvent } from "@/lib/calendar";
 export default function TaskCalendarButton({
   task,
   referenceDate,
+  compact = false,
 }: {
   task: Task;
   referenceDate?: string;
+  compact?: boolean;
 }) {
   const event = taskCalendarEvent(task, referenceDate);
   if (!event) return null;
@@ -23,7 +25,7 @@ export default function TaskCalendarButton({
       >
         <CalendarPlus size={16} />
       </a>
-      {event.usedFallback && (
+      {event.usedFallback && !compact && (
         <span
           className="text-[10px] text-amber-700"
           title={`Suggested date: ${event.dateLabel}. Review before saving.`}

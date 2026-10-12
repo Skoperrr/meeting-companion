@@ -74,7 +74,7 @@ function TaskCard({
       className="task-card performance-task-card border transition-colors duration-200 hover:border-botanical-sage motion-reduce:transition-none"
     >
       <div className="card-top">
-        <TaskCalendarButton task={task} referenceDate={task.meeting_date} />
+        <TaskCalendarButton compact task={task} referenceDate={task.meeting_date} />
         <span className={`badge priority-${task.priority.toLowerCase()}`}>
           {task.priority === "Med" ? "Medium" : task.priority} priority
         </span>

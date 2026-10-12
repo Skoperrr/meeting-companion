@@ -1448,3 +1448,8 @@ dialog { background:#13151b; color:#fff; border-color:rgba(59,130,246,.3); color
 .status-column-in-review .status-marker { background: #a5b4fc; }
 .status-column-completed .status-marker { background: #10b981; }
 .status-column-in-review .column-heading > span:last-child { background: rgba(99,102,241,.1); color: #c7d2fe; border-color: rgba(99,102,241,.3); }
+
+/* Task actions stay inside narrow cards when deadlines enable Calendar. */
+.task-card .card-top { flex-wrap: wrap; min-width: 0; gap: 8px; }
+.task-card .card-top > * { flex-shrink: 0; }
+.task-card .card-top .badge { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
