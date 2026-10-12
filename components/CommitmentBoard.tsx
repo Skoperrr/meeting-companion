@@ -452,14 +452,12 @@ export default function CommitmentBoard({
           <span className="sr-only" role="status">
             Loading interactive board...
           </span>
-          {statuses
-            .filter((status) => status !== "In Review")
-            .map((status) => (
-              <section className="board-column" key={status}>
-                <h3 className="mb-4 text-sm font-semibold">{status}</h3>
-                <TaskCardSkeleton />
-              </section>
-            ))}
+          {statuses.map((status) => (
+            <section className="board-column" key={status}>
+              <h3 className="mb-4 text-sm font-semibold">{status}</h3>
+              <TaskCardSkeleton />
+            </section>
+          ))}
         </div>
       ) : (
         <DragDropContext onDragStart={() => setDragging(true)} onDragEnd={drop}>

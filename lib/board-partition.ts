@@ -4,9 +4,10 @@ export const STATUS_COLUMNS = [
   "To Do",
   "In Progress",
   "Blocked",
+  "In Review",
   "Completed",
 ] as const;
-/** Single pass over the visible tasks; In Review shares the In Progress lane. */
+/** Single pass over the visible tasks; each status has its own lane. */
 export function partitionBoardColumns(
   items: Task[],
   source: Task[],
@@ -24,12 +25,7 @@ export function partitionBoardColumns(
   for (const task of items) {
     byId.set(task.id, task);
     if (task.status === "Completed") completed++;
-    const key =
-      grouping === "status"
-        ? task.status === "In Review"
-          ? "In Progress"
-          : task.status
-        : task.assigned_to;
+    const key = grouping === "status" ? task.status : task.assigned_to;
     const bucket = buckets.get(key);
     if (bucket) bucket.push(task);
     else buckets.set(key, [task]);

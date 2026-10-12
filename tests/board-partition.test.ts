@@ -34,13 +34,14 @@ test("status partition preserves task references and order, including In Review"
     "To Do",
     "In Progress",
     "Blocked",
+    "In Review",
     "Completed",
   ]);
   assert.deepEqual(
     result.buckets.get("In Progress")?.map((t) => t.id),
-    ["a", "b", "d"],
+    ["a", "d"],
   );
-  assert.equal(result.buckets.get("In Progress")?.[1], input[1]);
+  assert.equal(result.buckets.get("In Review")?.[0], input[1]);
   assert.equal(input[1].status, "In Review");
   assert.equal(result.completed, 1);
   assert.equal(result.byId.get("d"), input[3]);
@@ -60,10 +61,10 @@ test("a high-volume partition contains each task exactly once without cloning", 
   );
   const result = partitionBoardColumns(input, input, "status");
   assert.equal(result.byId.size, 10000);
-  assert.equal(result.buckets.get("In Progress")?.length, 5000);
+  assert.equal(result.buckets.get("In Review")?.length, 5000);
   assert.equal(result.buckets.get("To Do")?.[4999], input[9998]);
 });
-test("drop indexes match the merged In Progress lane", () => {
+test("drop indexes keep In Progress separate from In Review", () => {
   const input = [
     task("a", "In Progress"),
     task("b", "In Review"),
@@ -72,10 +73,20 @@ test("drop indexes match the merged In Progress lane", () => {
   ];
   const result = moveGroupedTask(input, "d", "status", "In Progress", 1);
   assert.deepEqual(
-    result
-      .filter((t) => t.status === "In Progress" || t.status === "In Review")
-      .map((t) => t.id),
-    ["a", "d", "b", "c"],
+    result.filter((t) => t.status === "In Progress").map((t) => t.id),
+    ["a", "d", "c"],
   );
   assert.equal(input[3].status, "To Do");
+});
+
+test("dropping into In Review changes only the moved task", () => {
+  const input = [task("a", "In Review"), task("b", "To Do")];
+  const result = moveGroupedTask(input, "b", "status", "In Review", 0);
+  assert.deepEqual(
+    result.map((t) => t.id),
+    ["b", "a"],
+  );
+  assert.equal(result[0].status, "In Review");
+  assert.equal(result[1], input[0]);
+  assert.equal(input[1].status, "To Do");
 });
