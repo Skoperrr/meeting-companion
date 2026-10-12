@@ -8,7 +8,7 @@ import {
 import DashboardHeader from "./DashboardHeader";
 import DashboardOverview from "./DashboardOverview";
 import MeetingSyncCard from "./MeetingSyncCard";
-import CommitmentBoard from "./CommitmentBoard";
+import CommitmentBoard from "./TaskBoard";
 import { useState, useCallback } from "react";
 import {
   AudioLines,

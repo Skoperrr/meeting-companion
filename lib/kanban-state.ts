@@ -58,7 +58,11 @@ export function moveGroupedTask(
   const task = tasks.find((t) => t.id === id);
   if (!task) return tasks;
   const remaining = tasks.filter((t) => t.id !== id);
-  const column = remaining.filter((t) => t[key] === value);
+  const column = remaining.filter(
+    (t) =>
+      t[key] === value ||
+      (key === "status" && value === "In Progress" && t.status === "In Review"),
+  );
   const target = Math.max(0, Math.min(index, column.length));
   const anchor = column[target];
   const at = anchor
