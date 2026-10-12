@@ -38,6 +38,7 @@ export default function GoogleSignInButton({
         type="button"
         onClick={signIn}
         disabled={busy}
+        aria-busy={busy}
         className="botanical-primary w-full"
       >
         <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">

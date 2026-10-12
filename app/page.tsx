@@ -9,6 +9,7 @@ import {
   Layers3,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import LandingNavLinks from "@/components/LandingNavLinks";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { serverSupabase } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
@@ -46,23 +47,22 @@ export default async function LandingPage() {
   ];
   return (
     <div className="botanical-landing">
-      <Navbar>
-        <nav
-          aria-label="Main navigation"
-          className="flex items-center gap-5 text-sm text-botanical-muted"
-        >
-          <a href="#features">What it does</a>
-          <a href="#workflow">How it flows</a>
-        </nav>
-        <div>
-          {signedIn ? (
-            <Link href="/dashboard" className="botanical-primary">
-              Your workspace <ArrowUpRight size={16} />
+      <Navbar
+        actions={
+          signedIn ? (
+            <Link
+              href="/dashboard"
+              className="botanical-primary"
+              aria-label="Open your workspace"
+            >
+              Your workspace <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
           ) : (
             <GoogleSignInButton />
-          )}
-        </div>
+          )
+        }
+      >
+        <LandingNavLinks />
       </Navbar>
       <main id="main-content" tabIndex={-1} className="!m-0 !max-w-none !p-0">
         <section className="botanical-hero">
