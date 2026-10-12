@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import SignInTransition from "./SignInTransition";
 import { browserSupabase } from "@/lib/supabase/browser";
 import { WORKSPACE_READ_SCOPES } from "@/lib/google-oauth-policy";
 import { safeNext } from "@/lib/supabase/config";
@@ -10,30 +11,40 @@ export default function GoogleSignInButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const inFlight = useRef(false);
   async function signIn() {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     setError("");
     try {
       const callback = new URL("/auth/callback", window.location.origin);
       callback.searchParams.set("next", safeNext(next));
-      const { error } = await browserSupabase().auth.signInWithOAuth({
+      const animation = new Promise<void>(resolve => setTimeout(resolve, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650));
+      const { data, error } = await browserSupabase().auth.signInWithOAuth({
         provider: "google",
         options: {
+          skipBrowserRedirect: true,
           redirectTo: callback.toString(),
           scopes: WORKSPACE_READ_SCOPES.join(" "),
           queryParams: { access_type: "offline", prompt: "consent" },
         },
       });
       if (error) throw error;
+      if (!data.url) throw new Error("Missing OAuth redirect");
+      await animation;
+      window.location.assign(data.url);
     } catch {
       setError(
         "Google sign-in could not start. Please try again or check the authentication configuration.",
       );
+      inFlight.current = false;
       setBusy(false);
     }
   }
   return (
     <div>
+      {busy && <SignInTransition />}
       <button
         type="button"
         onClick={signIn}
