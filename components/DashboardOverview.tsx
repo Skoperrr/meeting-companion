@@ -1,54 +1,62 @@
 "use client";
 import { motion, useReducedMotion } from "framer-motion";
 import { useId } from "react";
+import { Plus } from "lucide-react";
 import { springPhysics } from "@/lib/motion";
 export default function DashboardOverview({
   completed,
   total,
-  onPriority,
-  onDue,
-  hoverScale,
-  onHoverScale,
+  onCapture,
 }: {
   completed: number;
   total: number;
-  onPriority: () => void;
-  onDue: () => void;
-  hoverScale: boolean;
-  onHoverScale: () => void;
+  onCapture: () => void;
 }) {
-  const reduced = useReducedMotion();
-  const id = useId();
-  const percent = total ? Math.round((completed / total) * 100) : 0;
+  const reduced = useReducedMotion(),
+    id = useId();
+  const percent = total
+    ? Math.min(100, Math.round((completed / total) * 100))
+    : 0;
   const circumference = 2 * Math.PI * 48;
   return (
-    <section className="luxury-overview">
+    <section aria-labelledby={`${id}-heading`} className="dashboard-hero">
       <div>
-        <p className="eyebrow">LUXURIOUS DARK &amp; STARK</p>
-        <h1 className="mt-4 font-serif text-5xl tracking-tight text-white md:text-6xl">
-          AI Meeting
-          <br className="hidden lg:block" /> Companion
+        <p className="eyebrow">YOUR MEETINGS, MOVING FORWARD</p>
+        <h1
+          id={`${id}-heading`}
+          className="mt-4 font-serif text-[clamp(2rem,5vw,3.75rem)] leading-tight tracking-tight text-white"
+        >
+          AI Meeting Companion
         </h1>
-        <p className="mt-5 max-w-sm text-sm leading-7 text-text-secondary">
-          Clarity from conversation. Deliberate motion. Every commitment
-          connected to its source.
+        <p className="mt-4 max-w-xl text-sm leading-7 text-text-secondary">
+          Clarity from conversation. Every commitment connected to its source.
         </p>
+        <button
+          type="button"
+          onClick={onCapture}
+          aria-label="Capture a meeting from a transcript"
+          className="primary mt-6"
+        >
+          <Plus size={18} aria-hidden="true" />
+          Capture a Meeting
+        </button>
       </div>
       <div className="flex flex-wrap items-center gap-6">
         <svg
           viewBox="0 0 120 120"
           className="h-32 w-32 shrink-0"
           role="img"
-          aria-labelledby={id}
+          aria-labelledby={`${id}-ring`}
         >
-          <title id={id}>{percent}% completed</title>
+          <title id={`${id}-ring`}>
+            {completed} of {total} tasks completed, {percent}%
+          </title>
           <circle
             cx="60"
             cy="60"
             r="48"
             fill="none"
-            stroke="white"
-            strokeOpacity=".07"
+            stroke="rgba(255,255,255,.08)"
             strokeWidth="3"
           />
           <motion.circle
@@ -56,7 +64,7 @@ export default function DashboardOverview({
             cy="60"
             r="48"
             fill="none"
-            stroke="white"
+            stroke="#3B82F6"
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -64,7 +72,6 @@ export default function DashboardOverview({
             animate={{ strokeDashoffset: circumference * (1 - percent / 100) }}
             transition={reduced ? { duration: 0 } : springPhysics}
             transform="rotate(-90 60 60)"
-            className="luxury-ring"
           />
           <text
             x="60"
@@ -78,10 +85,10 @@ export default function DashboardOverview({
           </text>
         </svg>
         <div className="min-w-0 flex-1">
-          <h2 className="font-serif text-2xl text-white">
+          <h2 className="font-serif text-2xl sm:text-3xl text-white">
             Completion Streak &amp; Progress
           </h2>
-          <p className="mt-2 text-xs text-text-secondary">
+          <p className="mt-3 text-sm text-text-secondary">
             {completed} of {total} Tasks Completed ({percent}%)
           </p>
           <div
@@ -90,29 +97,14 @@ export default function DashboardOverview({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={percent}
-            className="my-5 h-1.5 overflow-hidden rounded-full bg-white/10"
+            className="mt-6 h-1.5 overflow-hidden rounded-full bg-white/10"
           >
             <motion.div
               initial={false}
               animate={{ width: `${percent}%` }}
               transition={reduced ? { duration: 0 } : springPhysics}
-              className="h-full rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,.45)]"
+              className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
             />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button className="luxury-filter" onClick={onPriority}>
-              🔥 High Priority
-            </button>
-            <button className="luxury-filter" onClick={onDue}>
-              ⏰ Due This Week
-            </button>
-            <button
-              className="luxury-filter"
-              aria-pressed={hoverScale}
-              onClick={onHoverScale}
-            >
-              🗂️ Hover Scale {hoverScale ? "On" : "Off"}
-            </button>
           </div>
         </div>
       </div>

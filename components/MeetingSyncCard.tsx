@@ -23,6 +23,7 @@ export default function MeetingSyncCard({
 }) {
   const reduced = useReducedMotion();
   const gradient = useId();
+  const headingId = useId();
   const active = ["fetching", "analyzing", "dispatching"].includes(phase);
   const labels: Record<ProcessingPhase, string> = {
     idle: "Ready for your conversation",
@@ -34,13 +35,16 @@ export default function MeetingSyncCard({
   };
   return (
     <section
-      aria-label="Meeting processing"
+      aria-labelledby={headingId}
       className="processing-pod rounded-3xl border border-border-subtle bg-surface-base p-6"
     >
       <span className="text-[10px] uppercase tracking-[.2em] text-text-secondary">
         Meeting Analysis & Sync
       </span>
-      <h2 className="mt-6 font-serif text-3xl font-normal text-white">
+      <h2
+        id={headingId}
+        className="mt-6 font-serif text-2xl sm:text-3xl font-normal text-white"
+      >
         {title || "A conversation, made clear."}
       </h2>
       <p className="mt-3 text-xs text-text-secondary">

@@ -1,28 +1,18 @@
 "use client";
-import { AudioLines } from "lucide-react";
 import type { ReactNode } from "react";
+import Navbar from "./Navbar";
 export default function DashboardHeader({
   children,
+  email,
 }: {
   completed: number;
   total: number;
   children: ReactNode;
+  email: string;
 }) {
   return (
-    <header className="topbar monochrome-header luxury-header">
-      <a
-        href="/dashboard"
-        className="inline-flex items-center gap-3"
-        aria-label="StrideShift dashboard"
-      >
-        <span className="brand-icon">
-          <AudioLines size={24} />
-        </span>
-        <span className="font-serif text-2xl text-text-primary">
-          StrideShift
-        </span>
-      </a>
+    <Navbar variant="workspace" email={email}>
       {children}
-    </header>
+    </Navbar>
   );
 }
