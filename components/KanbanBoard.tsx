@@ -17,7 +17,7 @@ import {
 } from "@/lib/kanban-state";
 import { playTaskSound } from "@/lib/audio";
 import { celebrateCompletion } from "@/lib/confetti";
-import KanbanCard from "./KanbanCard";
+import KanbanCard from "./CommitmentCard";
 import TaskCardSkeleton from "./TaskCardSkeleton";
 const subscribe = () => () => {};
 export default function KanbanBoard({
@@ -374,13 +374,17 @@ export default function KanbanBoard({
           <div
             className="board"
             style={{
-              gridTemplateColumns: `repeat(${columns.length}, minmax(260px, 1fr))`,
+              gridTemplateColumns: `repeat(${columns.length}, minmax(220px, 1fr))`,
             }}
           >
             <AnimatePresence initial={false}>
               {columns.map((status, index) => {
                 const column = items.filter(
-                  (task) => task[grouping] === status || (grouping === "status" && status === "In Progress" && task.status === "In Review"),
+                  (task) =>
+                    task[grouping] === status ||
+                    (grouping === "status" &&
+                      status === "In Progress" &&
+                      task.status === "In Review"),
                 );
                 return (
                   <motion.section
@@ -390,7 +394,7 @@ export default function KanbanBoard({
                     }
                     layout={!dragging && !reduced}
                     transition={springPhysics}
-                    className="board-column"
+                    className={`board-column status-column-${status.toLowerCase().replaceAll(" ", "-")}`}
                   >
                     <div className="column-heading">
                       <span className={`status-marker marker-${index}`} />

@@ -8,10 +8,18 @@ export default function MeetingSyncCard({
   title,
   date,
   phase,
+  characters = 0,
+  decisions = 0,
+  tasks = 0,
+  onProcess,
 }: {
   title: string;
   date: string;
   phase: ProcessingPhase;
+  characters?: number;
+  decisions?: number;
+  tasks?: number;
+  onProcess?: () => void;
 }) {
   const reduced = useReducedMotion();
   const gradient = useId();
@@ -21,7 +29,7 @@ export default function MeetingSyncCard({
     fetching: "Reading the conversation",
     analyzing: "Finding decisions and commitments",
     dispatching: "Saving your meeting",
-    success: "Ready for review",
+    success: `${decisions} decisions · ${tasks} proposed tasks`,
     error: "Processing needs attention",
   };
   return (
@@ -30,7 +38,7 @@ export default function MeetingSyncCard({
       className="processing-pod rounded-3xl border border-border-subtle bg-surface-base p-6"
     >
       <span className="text-[10px] uppercase tracking-[.2em] text-text-secondary">
-        Conversation / Intelligence
+        Meeting Analysis & Sync
       </span>
       <h2 className="mt-6 font-serif text-3xl font-normal text-white">
         {title || "A conversation, made clear."}
@@ -41,9 +49,9 @@ export default function MeetingSyncCard({
       <svg viewBox="0 0 360 100" className="my-6 w-full" aria-hidden="true">
         <defs>
           <linearGradient id={gradient}>
-            <stop stopColor="white" stopOpacity="0" />
-            <stop offset=".5" stopColor="white" stopOpacity=".8" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
+            <stop stopColor="#FFFFFF" stopOpacity=".15" />
+            <stop offset=".5" stopColor="#3B82F6" stopOpacity=".8" />
+            <stop offset="1" stopColor="#6366F1" stopOpacity=".35" />
           </linearGradient>
         </defs>
         {[0, 1, 2].map((index) => (
@@ -51,6 +59,7 @@ export default function MeetingSyncCard({
             key={index}
             d={`M0 50 C45 ${10 + index * 10},70 ${90 - index * 8},120 50 S190 ${10 + index * 8},240 50 S315 ${90 - index * 10},360 50`}
             stroke={`url(#${gradient})`}
+            style={{ stroke: `url(#${gradient})` }}
             strokeWidth="1"
             fill="none"
             initial={false}
@@ -70,9 +79,31 @@ export default function MeetingSyncCard({
       </svg>
       <div
         role="status"
+        aria-live="polite"
         className="rounded-full border border-border-focus px-3 py-2 text-xs text-text-secondary"
       >
         {labels[phase]}
+      </div>
+      <p className="mt-4 text-xs text-text-secondary">
+        {characters.toLocaleString()} transcript characters
+      </p>
+      {onProcess && (
+        <button type="button" className="secondary mt-4" onClick={onProcess}>
+          View meeting
+        </button>
+      )}
+      <div
+        role="progressbar"
+        aria-label="Meeting processing stage"
+        aria-valuetext={labels[phase]}
+        className="mt-5 grid grid-cols-3 gap-2"
+      >
+        {["Capture", "Extract", "Review"].map((step, index) => (
+          <span
+            key={step}
+            className={`h-1 rounded ${phase === "success" || (active && index <= (phase === "fetching" ? 0 : 1)) ? "bg-accent-blue" : "bg-white/10"}`}
+          />
+        ))}
       </div>
       <ol className="mt-5 grid grid-cols-3 gap-2 text-[9px] uppercase tracking-wider text-text-secondary">
         {["Capture", "Extract", "Review"].map((step, index) => (
