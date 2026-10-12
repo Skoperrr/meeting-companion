@@ -121,18 +121,6 @@ function TaskCard({
         <Link2 size={14} />
         {task.meeting_title}
       </button>
-      <button
-        type="button"
-        onClick={onEvidence}
-        className="botanical-evidence-preview"
-        aria-label={`Read full evidence for ${task.title}`}
-      >
-        “
-        {task.transcript_quote.length > 130
-          ? task.transcript_quote.slice(0, 130) + "…"
-          : task.transcript_quote}
-        ”
-      </button>
       <label className="status-label">
         Status
         <select
