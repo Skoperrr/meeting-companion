@@ -41,9 +41,9 @@ export default function MeetingSyncCard({
       <svg viewBox="0 0 360 100" className="my-6 w-full" aria-hidden="true">
         <defs>
           <linearGradient id={gradient}>
-            <stop stopColor="white" stopOpacity="0" />
-            <stop offset=".5" stopColor="white" stopOpacity=".8" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
+            <stop stopColor="#A855F7" stopOpacity=".7" />
+            <stop offset=".5" stopColor="#6366F1" stopOpacity=".7" />
+            <stop offset="1" stopColor="#38BDF8" stopOpacity=".5" />
           </linearGradient>
         </defs>
         {[0, 1, 2].map((index) => (
@@ -51,6 +51,7 @@ export default function MeetingSyncCard({
             key={index}
             d={`M0 50 C45 ${10 + index * 10},70 ${90 - index * 8},120 50 S190 ${10 + index * 8},240 50 S315 ${90 - index * 10},360 50`}
             stroke={`url(#${gradient})`}
+            style={{ stroke: `url(#${gradient})` }}
             strokeWidth="1"
             fill="none"
             initial={false}
@@ -70,6 +71,7 @@ export default function MeetingSyncCard({
       </svg>
       <div
         role="status"
+        aria-live="polite"
         className="rounded-full border border-border-focus px-3 py-2 text-xs text-text-secondary"
       >
         {labels[phase]}

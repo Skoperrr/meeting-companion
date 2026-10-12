@@ -42,7 +42,8 @@ export default function DashboardHeader({
             cx="23"
             cy="23"
             r="18"
-            stroke="white"
+            stroke="#8B5CF6"
+            className="neon-completion-ring"
             strokeWidth="2"
             fill="none"
             strokeLinecap="round"
@@ -52,7 +53,7 @@ export default function DashboardHeader({
             transition={reduced ? { duration: 0 } : springPhysics}
             transform="rotate(-90 23 23)"
           />
-          <text x="23" y="26" textAnchor="middle" fontSize="9" fill="white">
+          <text x="23" y="26" textAnchor="middle" fontSize="9" fill="#F8FAFC">
             {percent}%
           </text>
         </svg>

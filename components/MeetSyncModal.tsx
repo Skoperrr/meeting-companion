@@ -149,7 +149,11 @@ export default function MeetSyncModal({ onSynced }: Props) {
   const currentIndex = steps.findIndex((step) => step.stage === stage);
   return (
     <>
-      <button type="button" onClick={show} className="botanical-primary">
+      <button
+        type="button"
+        onClick={show}
+        className="botanical-primary neon-sync-button"
+      >
         <Video size={18} aria-hidden="true" /> Sync Google Meet
       </button>
       {open && (
