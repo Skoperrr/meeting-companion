@@ -18,7 +18,6 @@ import {
   Clock3,
   AlertCircle,
 } from "lucide-react";
-import CommandPalette from "./CommandPalette";
 import SoundToggle from "./SoundToggle";
 import MeetSyncModal from "@/components/MeetSyncModal";
 import TranscriptInput from "@/components/TranscriptInput";
@@ -134,25 +133,6 @@ export default function Workspace({
             </button>
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <CommandPalette
-              assignees={[
-                ...new Set(data.tasks.map((task) => task.assigned_to)),
-              ].sort()}
-              onDashboard={() => navigate("overview")}
-              onMeetings={() => navigate("history")}
-              onCreate={() => navigate("new")}
-              onSync={() =>
-                window.dispatchEvent(new Event("meeting-companion:sync"))
-              }
-              onAssignee={(name) => {
-                setView("board");
-                router.push(
-                  name
-                    ? `/tracker?assignee=${encodeURIComponent(name)}`
-                    : "/tracker",
-                );
-              }}
-            />
             <SoundToggle />
             <MeetSyncModal onSynced={refresh} />
           </div>

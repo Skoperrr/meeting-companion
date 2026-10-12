@@ -6,15 +6,17 @@ export default function Navbar({
   children,
   variant = "public",
   email,
+  actions,
 }: {
   children: ReactNode;
   variant?: "public" | "workspace";
   email?: string;
+  actions?: ReactNode;
 }) {
   const workspace = variant === "workspace";
   return (
     <header
-      className={`botanical-navbar ${workspace ? "topbar monochrome-header luxury-header app-navigation" : "public-navbar"}`}
+      className={`botanical-navbar ${workspace ? "topbar monochrome-header luxury-header app-navigation" : "public-navbar landing-navigation"}`}
     >
       <a
         href="#main-content"
@@ -37,6 +39,9 @@ export default function Navbar({
       <nav aria-label="Main Navigation" className="navigation-controls">
         {children}
       </nav>
+      {!workspace && actions && (
+        <div className="navigation-account navigation-actions">{actions}</div>
+      )}
       {workspace && (
         <div className="navigation-account">
           {email && (
