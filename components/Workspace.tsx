@@ -163,7 +163,13 @@ export default function Workspace({
                   <MeetingSyncCard
                     title={data.meetings[0]?.title ?? ""}
                     date={data.meetings[0]?.meeting_date ?? ""}
-                    phase={data.meetings.length ? "success" : "idle"}
+                    phase={
+                      data.meetings[0]
+                        ? data.meetings[0].review_state === "pending"
+                          ? "review"
+                          : "complete"
+                        : "idle"
+                    }
                     characters={data.meetings[0]?.transcript.length ?? 0}
                     decisions={data.meetings[0]?.analysis.decisions.length ?? 0}
                     tasks={
@@ -228,14 +234,24 @@ export default function Workspace({
                 />
               )}
               {view === "review" && selected && (
-                <TaskReviewList
-                  key={selected.id}
-                  meeting={selected}
-                  onSaved={async () => {
-                    await refresh();
-                    navigate("board");
-                  }}
-                />
+                <div className="space-y-6">
+                  <MeetingSyncCard
+                    title={selected.title}
+                    date={selected.meeting_date}
+                    phase="review"
+                    characters={selected.transcript.length}
+                    decisions={selected.analysis.decisions.length}
+                    tasks={selected.analysis.proposed_tasks.length}
+                  />
+                  <TaskReviewList
+                    key={selected.id}
+                    meeting={selected}
+                    onSaved={async () => {
+                      await refresh();
+                      navigate("board");
+                    }}
+                  />
+                </div>
               )}
               {view === "board" && (
                 <TaskBoard

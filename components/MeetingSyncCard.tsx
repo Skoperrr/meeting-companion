@@ -1,9 +1,15 @@
 "use client";
-import { useId } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { fluidEase } from "@/lib/motion";
+import { useEffect, useId, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 export type ProcessingPhase =
-  "idle" | "fetching" | "analyzing" | "dispatching" | "success" | "error";
+  | "idle"
+  | "fetching"
+  | "analyzing"
+  | "dispatching"
+  | "success"
+  | "review"
+  | "complete"
+  | "error";
 export default function MeetingSyncCard({
   title,
   date,
@@ -22,15 +28,115 @@ export default function MeetingSyncCard({
   onProcess?: () => void;
 }) {
   const reduced = useReducedMotion();
-  const gradient = useId();
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [syncPhase, setSyncPhase] = useState<ProcessingPhase | null>(null);
+  useEffect(() => {
+    const receive = (event: Event) => {
+      const next = (event as CustomEvent<ProcessingPhase | null>).detail;
+      setSyncPhase(next);
+    };
+    window.addEventListener("meeting-companion:processing", receive);
+    return () =>
+      window.removeEventListener("meeting-companion:processing", receive);
+  }, []);
+  const currentPhase = syncPhase ?? phase;
+  const step =
+    currentPhase === "review" ||
+    currentPhase === "success" ||
+    currentPhase === "complete"
+      ? 2
+      : currentPhase === "analyzing" || currentPhase === "dispatching"
+        ? 1
+        : 0;
+  useEffect(() => {
+    const element = canvas.current;
+    const context = element?.getContext("2d");
+    if (!element || !context) return;
+    let frame = 0;
+    let visible = true;
+    let time = 0;
+    let last = 0;
+    const draw = (stamp: number) => {
+      frame = 0;
+      if (!visible || document.hidden) return;
+      time += last ? Math.min(stamp - last, 50) / 1000 : 0;
+      last = stamp;
+      const width = element.clientWidth;
+      const height = 120;
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      if (
+        element.width !== Math.round(width * ratio) ||
+        element.height !== height * ratio
+      ) {
+        element.width = Math.round(width * ratio);
+        element.height = height * ratio;
+      }
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, width, height);
+      const busy = ["fetching", "analyzing", "dispatching"].includes(
+        currentPhase,
+      );
+      for (let layer = 0; layer < 3; layer++) {
+        const gradient = context.createLinearGradient(0, 0, width, 0);
+        gradient.addColorStop(0, "rgba(255,255,255,0.08)");
+        gradient.addColorStop(
+          0.5,
+          layer === 1 ? "rgba(99,102,241,.75)" : "rgba(59,130,246,.65)",
+        );
+        gradient.addColorStop(1, "rgba(255,255,255,0.08)");
+        context.strokeStyle = gradient;
+        context.lineWidth = 1.5;
+        context.beginPath();
+        for (let x = 0; x <= width; x += 3) {
+          const envelope = Math.sin((Math.PI * x) / Math.max(width, 1));
+          const y =
+            60 +
+            Math.sin(
+              (x / Math.max(width, 1)) * Math.PI * 6 +
+                time * (busy ? 2.8 : 0.9) +
+                layer * 1.4,
+            ) *
+              envelope *
+              (busy ? 30 : 14) *
+              (1 - layer * 0.18);
+          if (!x) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        }
+        context.stroke();
+      }
+      if (!reduced) frame = requestAnimationFrame(draw);
+    };
+    const resume = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      last = 0;
+      if (visible && !document.hidden) frame = requestAnimationFrame(draw);
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      resume();
+    });
+    observer.observe(element);
+    document.addEventListener("visibilitychange", resume);
+    resume();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", resume);
+    };
+  }, [currentPhase, reduced]);
   const headingId = useId();
-  const active = ["fetching", "analyzing", "dispatching"].includes(phase);
+  const active = ["fetching", "analyzing", "dispatching"].includes(
+    currentPhase,
+  );
   const labels: Record<ProcessingPhase, string> = {
     idle: "Ready for your conversation",
     fetching: "Reading the conversation",
     analyzing: "Finding decisions and commitments",
     dispatching: "Saving your meeting",
     success: `${decisions} decisions · ${tasks} proposed tasks`,
+    review: "Extraction complete · Ready for human review",
+    complete: "Review complete · Approved tasks saved",
     error: "Processing needs attention",
   };
   return (
@@ -50,43 +156,17 @@ export default function MeetingSyncCard({
       <p className="mt-3 text-xs text-text-secondary">
         {date || "Choose a meeting date"}
       </p>
-      <svg viewBox="0 0 360 100" className="my-6 w-full" aria-hidden="true">
-        <defs>
-          <linearGradient id={gradient}>
-            <stop stopColor="#FFFFFF" stopOpacity=".15" />
-            <stop offset=".5" stopColor="#3B82F6" stopOpacity=".8" />
-            <stop offset="1" stopColor="#6366F1" stopOpacity=".35" />
-          </linearGradient>
-        </defs>
-        {[0, 1, 2].map((index) => (
-          <motion.path
-            key={index}
-            d={`M0 50 C45 ${10 + index * 10},70 ${90 - index * 8},120 50 S190 ${10 + index * 8},240 50 S315 ${90 - index * 10},360 50`}
-            stroke={`url(#${gradient})`}
-            style={{ stroke: `url(#${gradient})` }}
-            strokeWidth="1"
-            fill="none"
-            initial={false}
-            animate={
-              active && !reduced
-                ? { opacity: [0.25, 0.8, 0.25], y: [-3, 3, -3] }
-                : { opacity: 0.3, y: 0 }
-            }
-            transition={{
-              duration: 3.6,
-              repeat: active && !reduced ? Infinity : 0,
-              delay: index * 0.3,
-              ease: fluidEase,
-            }}
-          />
-        ))}
-      </svg>
+      <canvas
+        ref={canvas}
+        className="my-6 h-[120px] w-full"
+        aria-hidden="true"
+      />
       <div
         role="status"
         aria-live="polite"
         className="rounded-full border border-border-focus px-3 py-2 text-xs text-text-secondary"
       >
-        {labels[phase]}
+        {labels[currentPhase]}
       </div>
       <p className="mt-4 text-xs text-text-secondary">
         {characters.toLocaleString()} transcript characters
@@ -96,28 +176,44 @@ export default function MeetingSyncCard({
           View meeting
         </button>
       )}
-      <div
-        role="progressbar"
-        aria-label="Meeting processing stage"
-        aria-valuetext={labels[phase]}
-        className="mt-5 grid grid-cols-3 gap-2"
+      <ol
+        aria-label="Meeting analysis workflow"
+        className="mt-5 grid grid-cols-3 gap-3"
       >
-        {["Capture", "Extract", "Review"].map((step, index) => (
-          <span
-            key={step}
-            className={`h-1 rounded ${phase === "success" || (active && index <= (phase === "fetching" ? 0 : 1)) ? "bg-accent-blue" : "bg-white/10"}`}
-          />
-        ))}
-      </div>
-      <ol className="mt-5 grid grid-cols-3 gap-2 text-[9px] uppercase tracking-wider text-text-secondary">
-        {["Capture", "Extract", "Review"].map((step, index) => (
-          <li key={step}>
-            <div
-              className={`mb-2 h-px ${phase === "success" || (active && index < (phase === "fetching" ? 1 : 2)) ? "bg-white" : "bg-white/10"}`}
-            />
-            {step}
-          </li>
-        ))}
+        {["Capture", "Extract", "Review"].map((label, index) => {
+          const done = currentPhase === "complete" || index < step;
+          const selected = index === step && currentPhase !== "complete";
+          return (
+            <li
+              key={label}
+              aria-current={selected ? "step" : undefined}
+              className="min-w-0"
+            >
+              <div
+                className={`mb-3 h-1 rounded ${done || selected ? "bg-blue-500" : "bg-white/10"}`}
+              />
+              <span
+                className={`text-xs font-semibold ${selected ? "text-white" : "text-slate-300"}`}
+              >
+                {label}
+              </span>
+              <p className="mt-1 text-xs text-slate-300">
+                {done
+                  ? "Done"
+                  : selected
+                    ? currentPhase === "error"
+                      ? "Needs attention"
+                      : active
+                        ? "In progress"
+                        : currentPhase === "review" ||
+                            currentPhase === "success"
+                          ? "Awaiting approval"
+                          : "Ready"
+                    : "Waiting"}
+              </p>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
