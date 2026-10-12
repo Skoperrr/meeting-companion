@@ -57,7 +57,7 @@ export default function CommandPalette(props: Props) {
         onClick={() => setOpen(true)}
         aria-label="Open command palette"
         aria-keyshortcuts="Meta+K Control+K"
-        className="inline-flex items-center gap-2 rounded-lg border border-slate-300/40 px-3 py-2 text-sm text-slate-500 hover:bg-indigo-50"
+        className="cobalt-command-dock inline-flex items-center gap-3 rounded-full border border-white/10 bg-surface-base px-5 py-3 text-sm text-text-secondary hover:border-blue-500/30"
       >
         <Search size={16} />
         <span className="hidden sm:inline">Search</span>

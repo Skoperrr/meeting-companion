@@ -6,6 +6,9 @@ import {
   cachedMeeting,
 } from "@/lib/prefetch";
 import DashboardHeader from "./DashboardHeader";
+import DashboardOverview from "./DashboardOverview";
+import MeetingSyncCard from "./MeetingSyncCard";
+import CommitmentBoard from "./CommitmentBoard";
 import { useState, useCallback } from "react";
 import {
   AudioLines,
@@ -48,6 +51,7 @@ export default function Workspace({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [navOpen, setNavOpen] = useState(false);
+  const [hoverScale, setHoverScale] = useState(true);
   const refresh = useCallback(async () => {
     try {
       const r = await fetch("/api/meetings", { cache: "no-store" });
@@ -102,7 +106,9 @@ export default function Workspace({
   ).length;
   const blocked = data.tasks.filter((t) => t.status === "Blocked").length;
   return (
-    <div className="app-shell">
+    <div
+      className={`app-shell luxury-workspace ${hoverScale ? "enable-hover-scale" : ""}`}
+    >
       <aside className={`sidebar ${navOpen ? "open" : ""}`}>
         <div className="brand">
           <span className="brand-icon">
@@ -151,7 +157,33 @@ export default function Workspace({
           >
             {navOpen ? <X /> : <Menu />}
           </button>
-          <div>
+          <div className="luxury-nav-tabs">
+            <button
+              className={
+                view === "overview" ? "luxury-nav-active" : "luxury-filter"
+              }
+              onClick={() => navigate("overview")}
+            >
+              Dashboard
+            </button>
+            <button
+              className={
+                view === "history" ? "luxury-nav-active" : "luxury-filter"
+              }
+              onClick={() => navigate("history")}
+            >
+              Meetings
+            </button>
+            <button
+              className={
+                view === "board" ? "luxury-nav-active" : "luxury-filter"
+              }
+              onClick={() => navigate("board")}
+            >
+              Tracker
+            </button>
+          </div>
+          <div className="sr-only">
             <span className="topbar-project">Workspace</span>
             <span className="divider">/</span>
             <span>
@@ -190,6 +222,10 @@ export default function Workspace({
             />
             <SoundToggle />
             <MeetSyncModal onSynced={refresh} />
+            <span className="luxury-user-capsule" title={email}>
+              <span aria-hidden="true">{email.slice(0, 1).toUpperCase()}</span>
+              <span>{email.split("@")[0]}</span>
+            </span>
           </div>
         </DashboardHeader>
         <main>
@@ -210,16 +246,63 @@ export default function Workspace({
             <>
               {view === "overview" && (
                 <>
-                  <div className="page-heading">
+                  <DashboardOverview
+                    completed={completed}
+                    total={data.tasks.length}
+                    hoverScale={hoverScale}
+                    onHoverScale={() => setHoverScale((current) => !current)}
+                    onPriority={() => {
+                      setView("board");
+                      router.push("/tracker?priority=High");
+                    }}
+                    onDue={() => {
+                      setView("board");
+                      router.push("/tracker?due=week");
+                    }}
+                  />
+                  <div className="luxury-dashboard-grid">
+                    <div className="min-w-0">
+                      <MeetingSyncCard
+                        title={data.meetings[0]?.title ?? ""}
+                        date={data.meetings[0]?.meeting_date ?? ""}
+                        phase={data.meetings.length ? "success" : "idle"}
+                        characters={data.meetings[0]?.transcript.length ?? 0}
+                        decisions={
+                          data.meetings[0]?.analysis.decisions.length ?? 0
+                        }
+                        tasks={
+                          data.meetings[0]?.analysis.proposed_tasks.length ?? 0
+                        }
+                        onProcess={() =>
+                          data.meetings[0]
+                            ? openMeeting(data.meetings[0].id)
+                            : navigate("new")
+                        }
+                      />
+                      <button
+                        className="primary w-full"
+                        onClick={() => navigate("new")}
+                      >
+                        <Plus size={16} /> Capture a meeting
+                      </button>
+                    </div>
+                    <section
+                      className="luxury-commitments min-w-0"
+                      aria-label="Commitment tracking"
+                    >
+                      <CommitmentBoard
+                        tasks={data.tasks}
+                        onUpdated={refresh}
+                        onMeeting={openMeeting}
+                      />
+                    </section>
+                  </div>
+                  <div className="page-heading luxury-secondary-heading">
                     <div>
                       <span className="eyebrow">
                         YOUR MEETINGS, MOVING FORWARD
                       </span>
-                      <h1>
-                        Less lost in conversation.
-                        <br />
-                        <span>More getting done.</span>
-                      </h1>
+                      <h1>Your workspace at a glance.</h1>
                       <p className="muted">
                         Capture the discussion. Review the actions. Keep the
                         work moving.
