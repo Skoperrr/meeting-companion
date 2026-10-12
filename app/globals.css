@@ -1378,3 +1378,16 @@ dialog { background:#13151b; color:#fff; border-color:rgba(59,130,246,.3); color
 .commitment-card { transition:transform .4s cubic-bezier(.16,1,.3,1),border-color .4s cubic-bezier(.16,1,.3,1); }
 @media(prefers-reduced-motion:reduce) { .enable-hover-scale .commitment-card:not(.is-dragging):hover { transform:none; } .commitment-card { transition:none; } }
 .botanical-toast[data-sonner-toast] { background:#1a1d24; color:#fff; border-color:rgba(59,130,246,.3); }
+
+/* Board projection runs only after interactions; cards do not carry blur layers. */
+.performance-card,.performance-task-card {
+ backdrop-filter:none !important; box-shadow:none !important;
+ backface-visibility:hidden; transform:translate3d(0,0,0);
+}
+.performance-card:hover,.performance-task-card:hover {
+ box-shadow:none !important; border-color:rgba(59,130,246,.3);
+}
+.performance-card.is-dragging { will-change:transform; }
+@media(prefers-reduced-motion:reduce) {
+ .performance-card,.performance-task-card { transform:none; }
+}

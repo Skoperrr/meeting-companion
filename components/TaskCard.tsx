@@ -10,6 +10,8 @@ import TaskCalendarButton from "./TaskCalendarButton";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 type Props = {
   presentationCopy?: boolean;
+  animateLayout?: boolean;
+  layoutRevision?: number;
   isDragging?: boolean;
   task: Task;
   saving: boolean;
@@ -21,6 +23,8 @@ type Props = {
 };
 function TaskCard({
   presentationCopy = false,
+  animateLayout = false,
+  layoutRevision = 0,
   isDragging = false,
   task,
   saving,
@@ -60,11 +64,14 @@ function TaskCard({
   return (
     <motion.article
       data-task-id={task.id}
-      layoutId={presentationCopy ? undefined : `task-${task.id}`}
-      layout={!reduced && !isDragging}
+      aria-hidden={presentationCopy || undefined}
+      initial={false}
+      layoutDependency={layoutRevision}
+      layout={animateLayout && !reduced && !isDragging ? "position" : false}
       transition={springPhysics}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="task-card border transition-all duration-300 hover:-translate-y-0.5 hover:border-botanical-sage hover:shadow-paper motion-reduce:transform-none motion-reduce:transition-none"
+      style={{ willChange: isDragging ? "transform" : undefined }}
+      className="task-card performance-task-card border transition-colors duration-200 hover:border-botanical-sage motion-reduce:transition-none"
     >
       <div className="card-top">
         <TaskCalendarButton task={task} referenceDate={task.meeting_date} />
