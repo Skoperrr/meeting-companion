@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#080809",
-        surface: { base: "#101114", elevated: "#16181D" },
+        canvas: "#0A0A0C",
+        surface: { base: "#111215", elevated: "#16181D" },
         border: {
           subtle: "rgba(255,255,255,0.08)",
           focus: "rgba(255,255,255,0.2)",
@@ -22,7 +22,7 @@ export default {
       },
       backgroundImage: {
         "ambient-glow":
-          "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 65%)",
+          "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%)",
       },
     },
   },

@@ -49,7 +49,7 @@ export default function CommandPalette(props: Props) {
     action();
   };
   const itemClass =
-    "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-sm text-zinc-300 data-[selected=true]:bg-white/10 data-[selected=true]:text-white";
+    "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-sm text-zinc-300 data-[selected=true]:bg-indigo-500/20 data-[selected=true]:text-white";
   return (
     <>
       <button
@@ -57,10 +57,10 @@ export default function CommandPalette(props: Props) {
         onClick={() => setOpen(true)}
         aria-label="Open command palette"
         aria-keyshortcuts="Meta+K Control+K"
-        className="command-dock inline-flex items-center gap-3 rounded-full border border-white/15 bg-[#101114]/95 px-5 py-3 text-sm text-white/70 shadow-2xl backdrop-blur-xl hover:border-white/30 hover:text-white"
+        className="inline-flex items-center gap-2 rounded-lg border border-slate-300/40 px-3 py-2 text-sm text-slate-500 hover:bg-indigo-50"
       >
         <Search size={16} />
-        <span>Search commands</span>
+        <span className="hidden sm:inline">Search</span>
         <kbd className="hidden text-[10px] opacity-60 sm:inline">⌘/Ctrl K</kbd>
       </button>
       {open && (
