@@ -1236,3 +1236,78 @@ input:focus,textarea:focus,select:focus { outline-color:#8e9099; border-color:rg
 
 .monochrome-header details > summary { background:#fff; color:#0a0a0c; }
 .monochrome-header details > summary:hover { background:#dedee2; }
+
+/* StrideShift public-site palette, sourced from its published design tokens. */
+@theme {
+ --color-canvas:hsl(40 30% 96%); --color-surface-base:hsl(40 28% 98%); --color-surface-elevated:hsl(40 22% 92%);
+ --color-text-primary:hsl(212 32% 9%); --color-text-secondary:hsl(213 12% 38%); --color-text-tertiary:hsl(213 12% 38%);
+ --color-border-subtle:hsl(40 18% 88%); --color-border-focus:hsl(208 32% 48%);
+ --color-white:hsl(212 32% 9%);
+ --color-botanical-paper:hsl(40 30% 96%); --color-botanical-linen:hsl(40 22% 92%); --color-botanical-forest:hsl(212 32% 9%);
+ --color-botanical-muted:hsl(213 12% 38%); --color-botanical-border:hsl(40 18% 88%); --color-botanical-sage:hsl(208 32% 48%); --color-botanical-moss:hsl(135 35% 38%); --color-botanical-clay:hsl(42 65% 60%);
+ --color-slate-50:#faf9f7; --color-slate-100:#f0ede7; --color-slate-200:#e6e1d8; --color-slate-300:#cbc7be; --color-slate-400:#646d78; --color-slate-500:#56616e; --color-slate-600:#465260; --color-slate-700:#344251; --color-slate-800:#263342; --color-slate-900:#182432; --color-slate-950:#10161e;
+ --color-zinc-50:#faf9f7; --color-zinc-100:#f0ede7; --color-zinc-200:#e6e1d8; --color-zinc-300:#465260; --color-zinc-400:#56616e; --color-zinc-500:#56616e; --color-zinc-600:#465260; --color-zinc-700:#344251; --color-zinc-800:#263342; --color-zinc-900:#f0ede7; --color-zinc-950:#faf9f7;
+ --color-indigo-50:#eef5fa; --color-indigo-100:#e1ebf3; --color-indigo-200:#c2d7e8; --color-indigo-300:#8cb2d0; --color-indigo-400:#658ead; --color-indigo-500:#537b9e; --color-indigo-600:#365c7b; --color-indigo-700:#28475f;
+ --color-emerald-50:#f1f6ef; --color-emerald-100:#e1e9da; --color-emerald-200:#c4d7bf; --color-emerald-500:#668459; --color-emerald-600:#3f824f; --color-emerald-700:#32673f; --color-emerald-950:#183422;
+ --color-red-50:#fff3f1; --color-red-100:#fde3df; --color-red-200:#efbab2; --color-red-400:#c8584b; --color-red-500:#bf3427; --color-red-600:#a72d22; --color-red-700:#8d271e;
+ --color-amber-50:#fbf7eb; --color-amber-100:#f5e9c9; --color-amber-200:#ebd498; --color-amber-300:#dbb957; --color-amber-700:#765619;
+}
+:root {
+ color-scheme:light; --paper:hsl(40 30% 96%); --forest:hsl(212 32% 9%); --sage:hsl(208 32% 48%); --muted:hsl(213 12% 38%); --border:hsl(40 18% 88%);
+ --stride-navy:hsl(212 32% 9%); --stride-cream:hsl(40 30% 96%); --stride-card:hsl(40 28% 98%); --stride-sky:hsl(208 32% 48%); --stride-soft:hsl(208 40% 90%); --stride-gold:hsl(42 65% 60%); --stride-sage:hsl(108 18% 44%);
+ background:var(--stride-cream); color:var(--stride-navy);
+}
+body,.app-shell,.luxury-workspace,.craft-workspace,.botanical-landing { background:var(--stride-cream); background-image:none; color:var(--stride-navy); }
+::selection { background:var(--stride-soft); color:var(--stride-navy); }
+h1,h2,h3,h4,.hero-copy h1,.hero-copy h1 em,.editorial-section-heading h2,.botanical-workflow h2,.task-card h4 { color:var(--stride-navy); }
+h1 span,.muted,.eyebrow,.craft-label,.task-card p,.task-meta,.source-link,.history-card p,.history-card small,.meeting-row small,.metric > div,.icon-button,.topbar-project,.brand-caption,.status-label,.empty { color:var(--muted); }
+.primary,.botanical-primary { background:var(--stride-navy); color:var(--stride-cream); border-color:var(--stride-navy); }
+.primary:hover,.botanical-primary:hover { background:hsl(212 22% 22%); color:var(--stride-cream); }
+.secondary,.botanical-secondary,.craft-button { background:transparent; color:var(--stride-navy); border-color:var(--border); }
+.secondary:hover,.botanical-secondary:hover,.craft-button:hover,.icon-button:hover { background:var(--stride-soft); color:var(--stride-navy); border-color:var(--stride-sky); }
+.panel,.metric,.task-card,.preview-task,.botanical-feature,.field-note-preview,.processing-pod,.luxury-pod,.craft-pod,.commitment-card,.history-card { background:var(--stride-card); background-image:none; border-color:var(--border); color:var(--stride-navy); box-shadow:none; }
+.bg-white { background-color:var(--stride-card); }
+.botanical-navbar,.monochrome-header,.topbar,.luxury-header.topbar { background:hsla(40,30%,96%,.95); border-color:var(--border); color:var(--stride-navy); }
+.sidebar { background:var(--stride-navy); border-color:hsl(212 22% 22%); color:var(--stride-cream); }
+.sidebar .brand,.sidebar .brand span,.sidebar .user-menu,.sidebar .sidebar-note,.sidebar .sidebar-note p { color:var(--stride-cream); }
+.sidebar nav button { color:hsl(40 22% 88%); }
+.sidebar nav button.active,.sidebar nav button:hover { background:hsl(212 22% 22%); color:var(--stride-cream); }
+.sidebar .workspace-label,.sidebar .eyebrow,.sidebar .brand span:not(.brand-icon) { color:hsl(40 22% 78%); }
+.brand-icon,.brand-seed,.logo-icon { background:var(--stride-soft); color:var(--stride-navy); }
+.botanical-wordmark,.brand { color:var(--stride-navy); }
+.botanical-tag,.count-pill,.badge,.column-heading > span:last-child { background:hsl(40 22% 92%); color:var(--stride-navy); border-color:var(--border); }
+.priority-high,.pending-badge { background:hsl(42 70% 84%); color:#644c18; border-color:hsl(42 45% 70%); }
+.priority-med { background:var(--stride-soft); color:#28475f; border-color:#c2d7e8; }
+.priority-low,.saved-badge { background:hsl(100 22% 88%); color:#3c5134; border-color:#c4d7bf; }
+.board-column,.craft-board .craft-column { background:hsl(40 22% 94%); border-color:var(--border); }
+.column-heading { border-color:var(--border); }
+.marker-0 { background:var(--stride-sky); }.marker-1 { background:var(--stride-gold); }.marker-2 { background:#bf3427; }.marker-3,.marker-4 { background:var(--stride-sage); }
+.task-card:hover,.commitment-card:hover { border-color:var(--stride-sky); }
+.commitment-card.is-dragging { background:hsl(208 55% 95%); border-color:var(--stride-sky); }
+.botanical-evidence-preview,.field-note-preview blockquote { color:var(--muted); border-color:var(--stride-sky); }
+input:not([type=checkbox]):not([type=file]),textarea,select,.reflection-canvas input,.reflection-canvas textarea.botanical-transcript { background:var(--stride-card); color:var(--stride-navy); border-color:var(--border); }
+input::placeholder,textarea::placeholder { color:var(--muted); }
+input:focus,textarea:focus,select:focus { outline-color:var(--stride-sky); border-color:var(--stride-sky); }
+button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:2px solid #365c7b !important; outline-offset:3px !important; box-shadow:0 0 0 3px var(--stride-cream) !important; }
+.botanical-upload,.review-callout { background:hsl(208 55% 95%); border-color:var(--stride-soft); color:var(--stride-navy); }
+.error { background:#fff3f1; border-color:#efbab2; color:#8d271e; }
+.botanical-toast[data-sonner-toast] { background:var(--stride-card); color:var(--stride-navy); border-color:var(--border); }
+.processing-pod svg path { stroke:var(--stride-sky); }
+.processing-pod svg text { fill:var(--stride-navy); }
+.processing-pod [role=status] { color:var(--muted); border-color:var(--border); }
+.luxury-filter,.luxury-user-capsule,.command-dock { background:var(--stride-card); color:var(--stride-navy); border-color:var(--border); }
+.luxury-nav-active { background:var(--stride-navy); color:var(--stride-cream); border-color:var(--stride-navy); }
+.luxury-ring { stroke:var(--stride-sky); filter:none; }
+.luxury-overview [role=progressbar] > div,.luxury-pod [role=progressbar] > div { background:var(--stride-sky); }
+.skip-link { background:var(--stride-navy); color:var(--stride-cream); }
+dialog { color-scheme:light; background:var(--stride-card); color:var(--stride-navy); border-color:var(--border); }
+dialog::backdrop { background:rgba(16,22,30,.5); }
+dialog [cmdk-input],dialog [cmdk-item] { color:var(--stride-navy) !important; }
+dialog [cmdk-item][data-selected=true] { background:var(--stride-soft); }
+
+.monochrome-header svg circle { stroke:var(--stride-sky); }
+.monochrome-header svg text { fill:var(--stride-navy); }
+.botanical-navbar .brand-caption { color:var(--muted); }
+.column-cards blockquote { color:var(--muted); border-color:var(--stride-sky); }
+.metrics,.section-head,.pipeline-strip,.history-card,.meeting-row,.column-cards,.source-link { border-color:var(--border); }
+.sidebar .user-menu button { color:var(--stride-cream); }

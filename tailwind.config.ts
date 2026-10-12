@@ -8,13 +8,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#0A0A0C",
-        surface: { base: "#111215", elevated: "#16181D" },
+        canvas: "hsl(40 30% 96%)",
+        surface: { base: "hsl(40 28% 98%)", elevated: "hsl(40 22% 92%)" },
         border: {
-          subtle: "rgba(255,255,255,0.08)",
-          focus: "rgba(255,255,255,0.2)",
+          subtle: "hsl(40 18% 88%)",
+          focus: "hsl(208 32% 48%)",
         },
-        text: { primary: "#FFFFFF", secondary: "#8E9099", tertiary: "#52545D" },
+        text: { primary: "hsl(212 32% 9%)", secondary: "hsl(213 12% 38%)", tertiary: "hsl(213 12% 38%)" },
       },
       fontFamily: {
         serif: ['"Instrument Serif"', "Georgia", "serif"],
@@ -22,7 +22,7 @@ export default {
       },
       backgroundImage: {
         "ambient-glow":
-          "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%)",
+          "none",
       },
     },
   },
