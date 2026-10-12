@@ -316,7 +316,8 @@ export default function KanbanBoard({
       <button
         type="button"
         onClick={() => setListMode((current) => !current)}
-        className="botanical-secondary mb-4"
+        aria-pressed={listMode}
+        className="mb-4 inline-flex items-center justify-center rounded-lg border border-botanical-border bg-botanical-linen px-4 py-2 !text-sm !leading-5 text-botanical-muted transition-colors hover:bg-botanical-border hover:text-botanical-forest"
       >
         {listMode ? "View Kanban board" : "View compact task list"}
       </button>
