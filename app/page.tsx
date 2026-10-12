@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LiveVitals from "@/components/LiveVitals";
 import {
   ArrowUpRight,
   Check,
@@ -102,7 +103,7 @@ export default async function LandingPage() {
             aria-label="Illustrative meeting review"
           >
             <div className="preview-orbit" aria-hidden="true">
-              <Activity size={88} strokeWidth={0.7} />
+              <LiveVitals />
             </div>
             <div className="flex items-center justify-between border-b border-botanical-border pb-5">
               <span className="botanical-eyebrow">01 / A conversation</span>
