@@ -111,12 +111,12 @@ function CommitmentCard({
             <div
               className={
                 compact
-                  ? "flex items-center gap-2 p-3"
+                  ? "flex flex-wrap items-center justify-end gap-1 p-3"
                   : "flex items-center justify-between gap-2 px-4 pt-3"
               }
             >
               {compact ? (
-                <h4 className="min-w-0 flex-1 line-clamp-2 text-sm font-medium leading-5 text-white">
+                <h4 className="w-full min-w-0 basis-full break-words pb-1 text-sm font-semibold leading-5 text-white">
                   {task.title}
                 </h4>
               ) : (
